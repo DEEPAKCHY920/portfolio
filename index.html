@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepak Choudhary | Frontend Developer & C++ Programmer Portfolio</title>
+    <meta name="description" content="Portfolio of Deepak Choudhary, a Frontend Developer and C++ Programmer based in New Delhi, India. Specialized in building modern, high-performance web applications.">
+    <!-- Google Fonts: Outfit and Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="header">
+        <div class="container header-container">
+            <a href="#home" class="logo" id="nav-logo">
+                <span class="logo-icon">DC</span>
+                <span class="logo-text">Deepak Choudhary</span>
+            </a>
+            
+            <nav class="nav-menu" id="nav-menu">
+                <a href="#home" class="nav-link active" id="nav-link-home">Home</a>
+                <a href="#about" class="nav-link" id="nav-link-about">About</a>
+                <a href="#skills" class="nav-link" id="nav-link-skills">Skills</a>
+                <a href="#projects" class="nav-link" id="nav-link-projects">Projects</a>
+                <a href="#experience" class="nav-link" id="nav-link-experience">Experience</a>
+                <a href="#achievements" class="nav-link" id="nav-link-achievements">Achievements</a>
+                <a href="#testimonials" class="nav-link" id="nav-link-testimonials">Testimonials</a>
+                <a href="#contact" class="nav-link" id="nav-link-contact">Contact</a>
+            </nav>
+
+            <div class="header-actions">
+                <a href="#" class="btn btn-download" id="btn-download-resume">
+                    <span>Download Resume</span>
+                    <i data-lucide="download" class="icon-sm"></i>
+                </a>
+                <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
+                    <i data-lucide="menu" id="menu-icon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        
+        <!-- Hero Section -->
+        <section id="home" class="section-hero reveal">
+            <div class="container hero-container">
+                <div class="hero-content">
+                    <div class="badge-status">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Available for opportunities</span>
+                    </div>
+                    
+                    <h1 class="hero-title">
+                        Hi, I'm <br>
+                        <span class="gradient-text">Deepak Choudhary</span>
+                    </h1>
+                    
+                    <h2 class="hero-subtitle">Frontend Developer & C++ Programmer</h2>
+                    
+                    <p class="hero-description">
+                        I build modern, responsive and high performance web applications with clean code and great UI/UX.
+                    </p>
+                    
+                    <div class="hero-actions">
+                        <a href="#projects" class="btn btn-primary" id="hero-btn-work">
+                            <span>View My Work</span>
+                            <i data-lucide="arrow-up-right" class="icon-sm"></i>
+                        </a>
+                        <a href="#contact" class="btn btn-secondary" id="hero-btn-contact">
+                            <span>Contact Me</span>
+                            <i data-lucide="mail" class="icon-sm"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="social-links">
+                        <a href="https://github.com" target="_blank" class="social-icon" aria-label="GitHub" id="social-github">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                        </a>
+                        <a href="https://linkedin.com" target="_blank" class="social-icon" aria-label="LinkedIn" id="social-linkedin">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                        </a>
+                        <a href="https://twitter.com" target="_blank" class="social-icon" aria-label="Twitter" id="social-twitter">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+                        </a>
+                        <a href="https://instagram.com" target="_blank" class="social-icon" aria-label="Instagram" id="social-instagram">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                        </a>
+                        <a href="mailto:deepakchoudhary17@gmail.com" class="social-icon" aria-label="Email" id="social-email">
+                            <i data-lucide="mail"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="hero-visual">
+                    <div class="profile-wrapper">
+                        <!-- Glowing Orbit Rings -->
+                        <div class="orbit-ring orbit-ring-1"></div>
+                        <div class="orbit-ring orbit-ring-2"></div>
+                        
+                        <div class="profile-image-container">
+                            <img src="assets/profile.png" alt="Deepak Choudhary Portrait" class="profile-img">
+                        </div>
+                        
+                        <!-- Floating Badge Cards -->
+                        <div class="floating-badge badge-exp float-ani-1">
+                            <div class="badge-icon-box">
+                                <i data-lucide="briefcase" class="text-cyan"></i>
+                            </div>
+                            <div class="badge-details">
+                                <span class="badge-title">Experience</span>
+                                <span class="badge-value">1+ Years</span>
+                            </div>
+                        </div>
+                        
+                        <div class="floating-badge badge-projects float-ani-2">
+                            <div class="badge-icon-box">
+                                <i data-lucide="folder-git-2" class="text-cyan"></i>
+                            </div>
+                            <div class="badge-details">
+                                <span class="badge-title">Projects</span>
+                                <span class="badge-value">15+</span>
+                            </div>
+                        </div>
+                        
+                        <div class="floating-badge badge-leetcode float-ani-3">
+                            <div class="badge-icon-box">
+                                <i data-lucide="code-2" class="text-cyan"></i>
+                            </div>
+                            <div class="badge-details">
+                                <span class="badge-title">LeetCode</span>
+                                <span class="badge-value">450+</span>
+                            </div>
+                        </div>
+                        
+                        <div class="floating-badge badge-commits float-ani-4">
+                            <div class="badge-icon-box">
+                                <i data-lucide="git-commit" class="text-cyan"></i>
+                            </div>
+                            <div class="badge-details">
+                                <span class="badge-title">Commits</span>
+                                <span class="badge-value">800+</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tech Stack & Partners bar -->
+        <section class="section-tech-bar reveal">
+            <div class="container">
+                <div class="tech-bar-wrapper">
+                    <div class="tech-section">
+                        <span class="bar-label">TECHNOLOGIES I WORK WITH</span>
+                        <div class="tech-icons-grid">
+                            <!-- HTML5 -->
+                            <div class="tech-icon-item" title="HTML5">
+                                <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M2 2h20l-2 18-8 2-8-2L2 2z" />
+                                    <path d="M12 5.5H6.5l.5 5.5h5v5.5l-4-1-0.2-2.5" />
+                                    <path d="M12 5.5h5.5l-0.5 5.5h-5v5.5l4-1 0.4-4.5" />
+                                </svg>
+                            </div>
+                            <!-- CSS3 -->
+                            <div class="tech-icon-item" title="CSS3">
+                                <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M2 2h20l-2 18-8 2-8-2L2 2z" />
+                                    <path d="M12 5.5H6.5l0.5 5.5h5M12 11h5.5l-0.5 5.5-5 1.5" />
+                                    <path d="M6.5 11h5.5" />
+                                </svg>
+                            </div>
+                            <!-- Javascript -->
+                            <div class="tech-icon-item" title="JavaScript">
+                                <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M3 3h18v18H3V3z" />
+                                    <path d="M15 8v8a2 2 0 0 1-2 2h-1" />
+                                    <path d="M9 13c0 2 1.5 3 3 3" />
+                                </svg>
+                            </div>
+                            <!-- React -->
+                            <div class="tech-icon-item" title="React">
+                                <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(30 12 12)" />
+                                    <ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(90 12 12)" />
+                                    <ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(150 12 12)" />
+                                    <circle cx="12" cy="12" r="1.5" />
+                                </svg>
+                            </div>
+                            <!-- Tailwind CSS -->
+                            <div class="tech-icon-item" title="Tailwind CSS">
+                                <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M12 6c-3.18 0-5.3 1.59-6.36 4.77 1.59-1.59 3.45-2.39 5.57-2.39 3.18 0 5.3 1.59 6.36 4.77-1.59 1.59-3.45 2.39-5.57 2.39z" />
+                                    <path d="M5.64 12.36c-3.18 0-5.3 1.59-6.36 4.77 1.59-1.59 3.45-2.39 5.57-2.39 3.18 0 5.3 1.59 6.36 4.77-1.59 1.59-3.45 2.39-5.57 2.39z" />
+                                </svg>
+                            </div>
+                            <!-- Node.js -->
+                            <div class="tech-icon-item" title="Node.js">
+                                <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M12 2L3 7v10l9 5 9-5V7L12 2z" />
+                                    <path d="M12 22V12" />
+                                    <path d="M12 12l9-5" />
+                                    <path d="M12 12L3 7" />
+                                    <path d="M16.5 9.5l-4.5 2.5" />
+                                </svg>
+                            </div>
+                            <!-- C++ -->
+                            <div class="tech-icon-item" title="C++">
+                                <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M14 9a3 3 0 1 0 0 6" />
+                                    <path d="M18 12h-4" />
+                                    <path d="M16 10v4" />
+                                </svg>
+                            </div>
+                            <!-- MongoDB -->
+                            <div class="tech-icon-item" title="MongoDB">
+                                <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M12 2v20M12 2s-4 4.5-4 9 4 9 4 9M12 2s4 4.5 4 9-4 9-4 9" />
+                                </svg>
+                            </div>
+                            <!-- Git -->
+                            <div class="tech-icon-item" title="Git">
+                                <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <circle cx="18" cy="18" r="3" />
+                                    <circle cx="6" cy="6" r="3" />
+                                    <circle cx="6" cy="18" r="3" />
+                                    <path d="M6 9v6" />
+                                    <path d="M9 15h6" />
+                                </svg>
+                            </div>
+                            <!-- Figma -->
+                            <div class="tech-icon-item" title="Figma">
+                                <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M9 3a3 3 0 0 0-3 3 3 3 0 0 0 3 3h3V3H9z" />
+                                    <path d="M9 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3h3V9H9z" />
+                                    <path d="M9 15a3 3 0 0 0-3 3 3 3 0 0 0 3 3h3v-6H9z" />
+                                    <path d="M15 9a3 3 0 1 0 0-6h-3v6h3z" />
+                                    <circle cx="15" cy="12" r="3" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="separator-line"></div>
+                    
+                    <div class="partners-section">
+                        <span class="bar-label">I'VE WORKED WITH</span>
+                        <div class="partner-logos">
+                            <div class="partner-item"><i data-lucide="triangle" class="partner-logo"></i> <span>Vercel</span></div>
+                            <div class="partner-item"><i data-lucide="globe" class="partner-logo"></i> <span>Netlify</span></div>
+                            <div class="partner-item"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="partner-logo"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg> <span>GitHub</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Me Section -->
+        <section id="about" class="section-about reveal">
+            <div class="container">
+                <div class="about-wrapper">
+                    <!-- Left: Showcase Video/Image -->
+                    <div class="about-visual">
+                        <div class="video-preview-card">
+                            <img src="assets/workspace.png" alt="Developer workspace showcase" class="video-thumbnail">
+                            <div class="play-button-overlay">
+                                <button class="btn-play" aria-label="Play video" id="btn-play-showcase">
+                                    <i data-lucide="play" class="fill-current text-dark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Info and bio -->
+                    <div class="about-info">
+                        <span class="section-subtitle">ABOUT ME</span>
+                        <h2 class="section-title">Who I Am<span class="text-cyan">.</span></h2>
+                        
+                        <p class="about-bio">
+                            I'm a BCA student passionate about building web applications and solving real world problems. I love turning ideas into reality using code.
+                        </p>
+                        
+                        <!-- Info Cards Grid -->
+                        <div class="info-cards-grid">
+                            <div class="info-card">
+                                <div class="info-card-icon">
+                                    <i data-lucide="graduation-cap" class="text-cyan"></i>
+                                </div>
+                                <div class="info-card-content">
+                                    <span class="info-label">Education</span>
+                                    <span class="info-value">BCA, Jagannath University (2025 - 2028)</span>
+                                </div>
+                            </div>
+                            
+                            <div class="info-card">
+                                <div class="info-card-icon">
+                                    <i data-lucide="sparkles" class="text-cyan"></i>
+                                </div>
+                                <div class="info-card-content">
+                                    <span class="info-label">Specialization</span>
+                                    <span class="info-value">Full Stack Development</span>
+                                </div>
+                            </div>
+                            
+                            <div class="info-card">
+                                <div class="info-card-icon">
+                                    <i data-lucide="map-pin" class="text-cyan"></i>
+                                </div>
+                                <div class="info-card-content">
+                                    <span class="info-label">Location</span>
+                                    <span class="info-value">Badli, New Delhi, India</span>
+                                </div>
+                            </div>
+                            
+                            <div class="info-card">
+                                <div class="info-card-icon">
+                                    <i data-lucide="mail" class="text-cyan"></i>
+                                </div>
+                                <div class="info-card-content">
+                                    <span class="info-label">Email</span>
+                                    <span class="info-value">deepakchoudhary17@gmail.com</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <a href="#contact" class="btn btn-primary btn-about-more" id="btn-about-more">
+                            <span>Know More About Me</span>
+                            <i data-lucide="arrow-right" class="icon-sm"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" class="section-skills reveal">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <span class="section-subtitle">MY SKILLS</span>
+                        <h2 class="section-title">Technologies I Work With<span class="text-cyan">.</span></h2>
+                    </div>
+                    <a href="#projects" class="btn-link" id="link-view-all-skills">
+                        <span>View All Skills</span>
+                        <i data-lucide="arrow-right" class="icon-xs"></i>
+                    </a>
+                </div>
+                
+                <div class="skills-grid" id="skills-container"></div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="section-projects reveal">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <span class="section-subtitle">FEATURED PROJECTS</span>
+                        <h2 class="section-title">Some Things I've Built<span class="text-cyan">.</span></h2>
+                    </div>
+                    <a href="https://github.com" target="_blank" class="btn-link" id="link-view-all-projects">
+                        <span>View All Projects</span>
+                        <i data-lucide="arrow-right" class="icon-xs"></i>
+                    </a>
+                </div>
+                
+                <div class="projects-grid" id="projects-container"></div>
+            </div>
+        </section>
+
+        <!-- Stats Counter Section -->
+        <section id="experience" class="section-stats-counter reveal">
+            <div class="container">
+                <div class="stats-bar-wrapper">
+                    <!-- Stat 1 -->
+                    <div class="stat-counter-item">
+                        <div class="stat-icon-box">
+                            <i data-lucide="code-2" class="text-cyan"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="stat-projects">15+</span>
+                            <span class="stat-label">Projects Completed</span>
+                        </div>
+                    </div>
+                    <!-- Stat 2 -->
+                    <div class="stat-counter-item">
+                        <div class="stat-icon-box">
+                            <i data-lucide="briefcase" class="text-cyan"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="stat-experience">1+</span>
+                            <span class="stat-label">Years of Experience</span>
+                        </div>
+                    </div>
+                    <!-- Stat 3 -->
+                    <div class="stat-counter-item">
+                        <div class="stat-icon-box">
+                            <i data-lucide="trophy" class="text-cyan"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="stat-problems">1000+</span>
+                            <span class="stat-label">Coding Problems Solved</span>
+                        </div>
+                    </div>
+                    <!-- Stat 4 -->
+                    <div class="stat-counter-item">
+                        <div class="stat-icon-box">
+                             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="stat-commits">800+</span>
+                            <span class="stat-label">GitHub Commits</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Achievements Section -->
+        <section id="achievements" class="section-achievements reveal">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <span class="section-subtitle">MY ACHIEVEMENTS</span>
+                        <h2 class="section-title">Milestones & Recognitions<span class="text-cyan">.</span></h2>
+                    </div>
+                </div>
+                
+                <div class="achievements-grid" id="achievements-container"></div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section id="testimonials" class="section-testimonials reveal">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <span class="section-subtitle">TESTIMONIALS</span>
+                        <h2 class="section-title">What People Say<span class="text-cyan">.</span></h2>
+                    </div>
+                </div>
+                
+                <div class="testimonials-grid" id="testimonials-container"></div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="section-contact reveal">
+            <div class="container">
+                <div class="contact-card">
+                    <div class="contact-header">
+                        <span class="section-subtitle">GET IN TOUCH</span>
+                        <h2 class="section-title">Let's Create Something Great Together<span class="text-cyan">.</span></h2>
+                        <p class="contact-desc">
+                            Have a project in mind, want to collaborate, or just want to say hi? Feel free to reach out. I'm always open to discussing new opportunities.
+                        </p>
+                    </div>
+                    
+                    <form class="contact-form" id="contact-form" onsubmit="event.preventDefault();">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="form-name">Your Name</label>
+                                <input type="text" id="form-name" placeholder="John Doe" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="form-email">Your Email</label>
+                                <input type="email" id="form-email" placeholder="john@example.com" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="form-subject">Subject</label>
+                            <input type="text" id="form-subject" placeholder="Project Collaboration" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="form-message">Message</label>
+                            <textarea id="form-message" rows="5" placeholder="Tell me about your project..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-submit" id="btn-submit-message">
+                            <span>Send Message</span>
+                            <i data-lucide="send" class="icon-sm"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="premium-footer">
+        <div class="container">
+            <!-- Top Footer Card -->
+            <div class="footer-card">
+                <div class="footer-top-row">
+                    <div class="footer-top-left">
+                        <span class="badge-status-green">
+                            <span class="status-dot-green"></span>
+                            <span>STAY CONNECTED</span>
+                        </span>
+                        <h2 class="footer-cta-title">Let's build something <br><span class="text-cyan">amazing together.</span></h2>
+                    </div>
+                    
+                    <div class="footer-top-divider"></div>
+                    
+                    <div class="footer-top-right">
+                        <p class="footer-cta-desc">Get the latest updates about my projects, articles and new things I'm building.</p>
+                        <form class="subscribe-form" onsubmit="event.preventDefault();">
+                            <div class="subscribe-input-group">
+                                <i data-lucide="mail" class="subscribe-mail-icon"></i>
+                                <input type="email" placeholder="Enter your email" required>
+                                <button type="submit" class="btn btn-subscribe">
+                                    <span>Subscribe</span>
+                                    <i data-lucide="arrow-up-right" class="icon-sm"></i>
+                                </button>
+                            </div>
+                            <div class="subscribe-subtext">
+                                <i data-lucide="shield-check" class="text-cyan icon-sm"></i>
+                                <span>No spam, ever. Unsubscribe anytime.</span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="footer-card-divider"></div>
+
+                <!-- Middle Grid (5 Columns) -->
+                <div class="footer-middle-grid">
+                    <!-- Column 1: Info -->
+                    <div class="footer-col footer-col-info">
+                        <a href="#home" class="logo footer-logo">
+                            <span class="logo-icon">DC</span>
+                            <span class="logo-text">Deepak Choudhary</span>
+                        </a>
+                        <span class="footer-logo-sub">Frontend Developer & C++ Programmer</span>
+                        <p class="footer-info-desc">
+                            I build modern, responsive and high performance web applications with clean code and great UI/UX.
+                        </p>
+                        <div class="footer-social-links">
+                            <a href="https://github.com" target="_blank" aria-label="GitHub" class="footer-social-icon">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                            </a>
+                            <a href="https://linkedin.com" target="_blank" aria-label="LinkedIn" class="footer-social-icon">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                            </a>
+                            <a href="https://twitter.com" target="_blank" aria-label="Twitter" class="footer-social-icon">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+                            </a>
+                            <a href="https://instagram.com" target="_blank" aria-label="Instagram" class="footer-social-icon">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                            </a>
+                            <a href="mailto:deepakchoudhary17@gmail.com" aria-label="Email" class="footer-social-icon">
+                                <i data-lucide="mail" class="icon-sm"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Navigation -->
+                    <div class="footer-col">
+                        <h4 class="footer-col-title">NAVIGATION</h4>
+                        <ul class="footer-col-list">
+                            <li><a href="#home"><i data-lucide="chevron-right" class="icon-xs"></i> <span>Home</span></a></li>
+                            <li><a href="#about"><i data-lucide="chevron-right" class="icon-xs"></i> <span>About</span></a></li>
+                            <li><a href="#skills"><i data-lucide="chevron-right" class="icon-xs"></i> <span>Skills</span></a></li>
+                            <li><a href="#projects"><i data-lucide="chevron-right" class="icon-xs"></i> <span>Projects</span></a></li>
+                            <li><a href="#experience"><i data-lucide="chevron-right" class="icon-xs"></i> <span>Experience</span></a></li>
+                            <li><a href="#contact"><i data-lucide="chevron-right" class="icon-xs"></i> <span>Contact</span></a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 3: Resources -->
+                    <div class="footer-col">
+                        <h4 class="footer-col-title">RESOURCES</h4>
+                        <ul class="footer-col-list">
+                            <li><a href="#"><i data-lucide="chevron-right" class="icon-xs"></i> <span>Blog</span></a></li>
+                            <li><a href="#"><i data-lucide="chevron-right" class="icon-xs"></i> <span>Case Studies</span></a></li>
+                            <li><a href="#"><i data-lucide="chevron-right" class="icon-xs"></i> <span>Resume</span></a></li>
+                            <li><a href="https://github.com" target="_blank"><i data-lucide="chevron-right" class="icon-xs"></i> <span>GitHub</span></a></li>
+                            <li><a href="#"><i data-lucide="chevron-right" class="icon-xs"></i> <span>Designs</span></a></li>
+                            <li><a href="#"><i data-lucide="chevron-right" class="icon-xs"></i> <span>Articles</span></a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 4: Tools & Tech -->
+                    <div class="footer-col">
+                        <h4 class="footer-col-title">TOOLS & TECH</h4>
+                        <ul class="footer-col-list">
+                            <li class="tech-list-item">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#61dafb" stroke-width="2"><ellipse cx="12" cy="12" rx="11" ry="4.2" transform="rotate(30 12 12)" /><ellipse cx="12" cy="12" rx="11" ry="4.2" transform="rotate(90 12 12)" /><ellipse cx="12" cy="12" rx="11" ry="4.2" transform="rotate(150 12 12)" /><circle cx="12" cy="12" r="1.8" fill="#61dafb" /></svg>
+                                <span>React</span>
+                            </li>
+                            <li class="tech-list-item">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="0" y="0" width="24" height="24" rx="3" fill="#3178c6"/><text x="6" y="18" fill="white" font-family="Arial" font-weight="bold" font-size="14">TS</text></svg>
+                                <span>TypeScript</span>
+                            </li>
+                            <li class="tech-list-item">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="#38bdf8"><path d="M12 6c-3.18 0-5.3 1.59-6.36 4.77 1.59-1.59 3.45-2.39 5.57-2.39 3.18 0 5.3 1.59 6.36 4.77-1.59 1.59-3.45 2.39-5.57 2.39zM5.64 12.36c-3.18 0-5.3 1.59-6.36 4.77 1.59-1.59 3.45-2.39 5.57-2.39 3.18 0 5.3 1.59 6.36 4.77-1.59 1.59-3.45 2.39-5.57 2.39z"/></svg>
+                                <span>Tailwind CSS</span>
+                            </li>
+                            <li class="tech-list-item">
+                                <svg viewBox="0 0 24 24" width="24" height="16" fill="currentColor"><rect x="0" y="0" width="24" height="16" rx="2" fill="#88ce02"/><text x="2" y="12" fill="black" font-family="Arial" font-weight="bold" font-size="9">GSAP</text></svg>
+                                <span>GSAP</span>
+                            </li>
+                            <li class="tech-list-item">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 2L2 22h20L12 2z" fill="url(#vite-grad)"/><path d="M12 2L9.5 7h5L12 2z" fill="#ffdf00"/><defs><linearGradient id="vite-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#bd34fe"/><stop offset="100%" stop-color="#41d1ff"/></linearGradient></defs></svg>
+                                <span>Vite</span>
+                            </li>
+                            <li class="tech-list-item">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                                <span>Git & GitHub</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 5: Connect -->
+                    <div class="footer-col footer-col-connect">
+                        <h4 class="footer-col-title">LET'S CONNECT</h4>
+                        <ul class="footer-col-list">
+                            <li><i data-lucide="map-pin" class="text-cyan icon-sm"></i> <span>Badli, New Delhi, India</span></li>
+                            <li><i data-lucide="mail" class="text-cyan icon-sm"></i> <span>deepakchoudhary17@gmail.com</span></li>
+                            <li><i data-lucide="phone" class="text-cyan icon-sm"></i> <span>+91 6395 123 456</span></li>
+                            <li class="avail-item"><i data-lucide="calendar" class="text-cyan icon-sm"></i> <span>Available for freelance <span class="status-dot-green inline"></span></span></li>
+                        </ul>
+                        
+                        <div class="footer-status-widget">
+                            <div class="widget-icon-box">
+                                <i data-lucide="code-2" class="text-cyan icon-sm"></i>
+                            </div>
+                            <div class="widget-info">
+                                <span class="widget-label">Current Status</span>
+                                <span class="widget-value">Building something awesome <span class="status-dot-green"></span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-card-divider"></div>
+
+                <!-- Bottom Copyright Row -->
+                <div class="footer-bottom-row">
+                    <p class="copyright">&copy; 2024 <span class="text-cyan">Deepak Choudhary</span>. All rights reserved.</p>
+                    <div class="footer-crafted">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="heartbeat-icon"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        <span>Crafted with passion and lots of ☕</span>
+                    </div>
+                    <a href="#home" class="footer-back-top">
+                        <span>Back to top</span>
+                        <i data-lucide="arrow-up" class="icon-sm"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

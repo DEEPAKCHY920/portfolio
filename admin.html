@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepak Choudhary | Portfolio Admin Console</title>
+    <!-- Google Fonts: Outfit and Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+    <!-- Login Gate screen overlay -->
+    <div id="login-overlay" class="login-overlay active">
+        <div class="login-card">
+            <div class="login-header">
+                <span class="login-logo-icon">DC</span>
+                <h2>Admin Console Login</h2>
+                <p>Welcome back! Enter credentials to manage your portfolio.</p>
+            </div>
+            
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <div class="input-icon-wrapper">
+                        <i data-lucide="user" class="input-icon"></i>
+                        <input type="text" id="login-username" placeholder="Enter username" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <div class="input-icon-wrapper">
+                        <i data-lucide="lock" class="input-icon"></i>
+                        <input type="password" id="login-password" placeholder="Enter password" required>
+                    </div>
+                </div>
+                
+                <div id="login-error-msg" class="login-error-msg">
+                    <i data-lucide="alert-circle" class="icon-sm"></i>
+                    <span>Invalid username or password!</span>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-login">
+                    <span>Sign In</span>
+                    <i data-lucide="log-in" class="icon-sm"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Admin App Layout -->
+    <div id="admin-app" class="admin-app">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">DC</div>
+                <div class="brand-info">
+                    <h3 class="brand-name">Deepak Choudhary</h3>
+                    <span class="brand-sub">Portfolio Admin</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <!-- Group 1: Dashboard -->
+                <div class="menu-item-link active" data-view="dashboard">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </div>
+                
+                <!-- Group 2: Content -->
+                <span class="menu-section-title">CONTENT</span>
+                <div class="menu-item-link" data-view="profile">
+                    <i data-lucide="user"></i>
+                    <span>Profile</span>
+                </div>
+                <div class="menu-item-link" data-view="projects">
+                    <i data-lucide="briefcase"></i>
+                    <span>Projects</span>
+                </div>
+                <div class="menu-item-link" data-view="project-details">
+                    <i data-lucide="file-text"></i>
+                    <span>Project Details</span>
+                </div>
+                <div class="menu-item-link" data-view="skills">
+                    <i data-lucide="wrench"></i>
+                    <span>Skills</span>
+                </div>
+                <div class="menu-item-link" data-view="experience">
+                    <i data-lucide="folder-git-2"></i>
+                    <span>Experience</span>
+                </div>
+                <div class="menu-item-link" data-view="education">
+                    <i data-lucide="graduation-cap"></i>
+                    <span>Education</span>
+                </div>
+                <div class="menu-item-link" data-view="certificates">
+                    <i data-lucide="award"></i>
+                    <span>Certificates</span>
+                </div>
+                <div class="menu-item-link" data-view="blog">
+                    <i data-lucide="pencil"></i>
+                    <span>Blog</span>
+                </div>
+                <div class="menu-item-link" data-view="testimonials">
+                    <i data-lucide="star"></i>
+                    <span>Testimonials</span>
+                </div>
+                
+                <!-- Group 3: Management -->
+                <span class="menu-section-title">MANAGEMENT</span>
+                <div class="menu-item-link" data-view="messages">
+                    <i data-lucide="message-square"></i>
+                    <span>Messages</span>
+                    <span class="badge-count" id="messages-count-badge">6</span>
+                </div>
+                <div class="menu-item-link" data-view="media">
+                    <i data-lucide="image"></i>
+                    <span>Media Library</span>
+                </div>
+                <div class="menu-item-link" data-view="analytics">
+                    <i data-lucide="trending-up"></i>
+                    <span>Analytics</span>
+                </div>
+                <div class="menu-item-link" data-view="seo">
+                    <i data-lucide="search"></i>
+                    <span>SEO</span>
+                </div>
+                <div class="menu-item-link" data-view="appearance">
+                    <i data-lucide="palette"></i>
+                    <span>Appearance</span>
+                </div>
+                <div class="menu-item-link" data-view="settings">
+                    <i data-lucide="settings"></i>
+                    <span>Settings</span>
+                </div>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="admin-profile-card">
+                    <img src="assets/profile.png" alt="Admin Avatar" class="admin-avatar">
+                    <div class="admin-profile-info">
+                        <span class="admin-name">Deepak Choudhary</span>
+                        <span class="admin-role">Admin</span>
+                    </div>
+                </div>
+                <a href="index.html" class="btn btn-view-portfolio">
+                    <span>View Portfolio</span>
+                    <i data-lucide="external-link" class="icon-sm"></i>
+                </a>
+                <div class="logout-btn" id="logout-trigger">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="admin-main">
+            <!-- Header Bar -->
+            <header class="admin-header">
+                <div class="header-left">
+                    <button class="mobile-sidebar-toggle" id="mobile-sidebar-toggle" aria-label="Toggle sidebar">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <div class="header-greeting">
+                        <h2 id="header-view-title">Welcome back, Deepak! 👋</h2>
+                        <p id="header-view-sub">Here's what's happening with your portfolio today.</p>
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                    <div class="search-bar">
+                        <i data-lucide="search" class="icon-sm"></i>
+                        <input type="text" placeholder="Search anything...">
+                        <span class="search-kbd">⌘K</span>
+                    </div>
+                    <button class="header-btn" title="Toggle Theme">
+                        <i data-lucide="sun"></i>
+                    </button>
+                    <button class="header-btn notification-bell" title="Notifications">
+                        <i data-lucide="bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+                    
+                    <div class="new-content-dropdown">
+                        <button class="btn btn-primary" id="btn-new-content">
+                            <span>+ New Content</span>
+                            <i data-lucide="chevron-down" class="icon-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Views Container -->
+            <div class="admin-content-view">
+                
+                <!-- 1. DASHBOARD VIEW -->
+                <div class="admin-view active" id="view-dashboard">
+                    <!-- Metrics Row -->
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-content-row">
+                                <div class="metric-icon-box bg-cyan">
+                                    <i data-lucide="users"></i>
+                                </div>
+                                <div class="metric-info-box">
+                                    <span class="metric-label">Total Visitors</span>
+                                    <div class="metric-value-row">
+                                        <span class="metric-val">24.8K</span>
+                                        <span class="metric-pct up"><i data-lucide="arrow-up-right"></i> 12.5%</span>
+                                    </div>
+                                    <span class="metric-subtext">vs last 30 days</span>
+                                </div>
+                            </div>
+                            <div class="sparkline-container"><canvas id="chart-spark-visitors"></canvas></div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-content-row">
+                                <div class="metric-icon-box bg-cyan">
+                                    <i data-lucide="briefcase"></i>
+                                </div>
+                                <div class="metric-info-box">
+                                    <span class="metric-label">Projects</span>
+                                    <div class="metric-value-row">
+                                        <span class="metric-val" id="dash-projects-count">12</span>
+                                        <span class="metric-pct up"><i data-lucide="arrow-up-right"></i> +2</span>
+                                    </div>
+                                    <span class="metric-subtext">Total Published</span>
+                                </div>
+                            </div>
+                            <div class="sparkline-container"><canvas id="chart-spark-projects"></canvas></div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-content-row">
+                                <div class="metric-icon-box bg-cyan">
+                                    <i data-lucide="file-text"></i>
+                                </div>
+                                <div class="metric-info-box">
+                                    <span class="metric-label">Blog Posts</span>
+                                    <div class="metric-value-row">
+                                        <span class="metric-val">18</span>
+                                        <span class="metric-pct up"><i data-lucide="arrow-up-right"></i> +4</span>
+                                    </div>
+                                    <span class="metric-subtext">Total Published</span>
+                                </div>
+                            </div>
+                            <div class="sparkline-container"><canvas id="chart-spark-blogs"></canvas></div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-content-row">
+                                <div class="metric-icon-box bg-cyan">
+                                    <i data-lucide="message-square"></i>
+                                </div>
+                                <div class="metric-info-box">
+                                    <span class="metric-label">Messages</span>
+                                    <div class="metric-value-row">
+                                        <span class="metric-val" id="dash-messages-count">32</span>
+                                        <span class="metric-pct up"><i data-lucide="arrow-up-right"></i> +8</span>
+                                    </div>
+                                    <span class="metric-subtext">Total Messages</span>
+                                </div>
+                            </div>
+                            <div class="sparkline-container"><canvas id="chart-spark-messages"></canvas></div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-content-row">
+                                <div class="metric-icon-box bg-cyan">
+                                    <i data-lucide="download"></i>
+                                </div>
+                                <div class="metric-info-box">
+                                    <span class="metric-label">Downloads</span>
+                                    <div class="metric-value-row">
+                                        <span class="metric-val">156</span>
+                                        <span class="metric-pct up"><i data-lucide="arrow-up-right"></i> 16.3%</span>
+                                    </div>
+                                    <span class="metric-subtext">Resume Downloads</span>
+                                </div>
+                            </div>
+                            <div class="sparkline-container"><canvas id="chart-spark-downloads"></canvas></div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-content-row">
+                                <div class="metric-icon-box bg-cyan">
+                                    <i data-lucide="github"></i>
+                                </div>
+                                <div class="metric-info-box">
+                                    <span class="metric-label">GitHub Stars</span>
+                                    <div class="metric-value-row">
+                                        <span class="metric-val">487</span>
+                                        <span class="metric-pct up"><i data-lucide="arrow-up-right"></i> +23</span>
+                                    </div>
+                                    <span class="metric-subtext">Total Stars</span>
+                                </div>
+                            </div>
+                            <div class="sparkline-container"><canvas id="chart-spark-stars"></canvas></div>
+                        </div>
+                    </div>
+
+                    <!-- Charts & Recent Rows -->
+                    <div class="dashboard-charts-row">
+                        <!-- Visitor Analytics Card -->
+                        <div class="analytics-card-large">
+                            <div class="card-header-flex">
+                                <h3>Visitor Analytics</h3>
+                                <div class="card-filters">
+                                    <select class="select-sm">
+                                        <option>Last 30 Days</option>
+                                    </select>
+                                    <select class="select-sm">
+                                        <option>Overview</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="main-chart-box">
+                                <canvas id="chart-visitor-analytics"></canvas>
+                            </div>
+                            <div class="chart-stats-bar">
+                                <div class="chart-stat-item">
+                                    <span class="stat-num">24.8K</span>
+                                    <span class="stat-name">Total Visitors <span class="trend up"><i data-lucide="arrow-up-right"></i> 12.5%</span></span>
+                                </div>
+                                <div class="chart-stat-item">
+                                    <span class="stat-num">18.7K</span>
+                                    <span class="stat-name">Unique Visitors <span class="trend up"><i data-lucide="arrow-up-right"></i> 10.2%</span></span>
+                                </div>
+                                <div class="chart-stat-item">
+                                    <span class="stat-num">56.3K</span>
+                                    <span class="stat-name">Page Views <span class="trend up"><i data-lucide="arrow-up-right"></i> 15.3%</span></span>
+                                </div>
+                                <div class="chart-stat-item">
+                                    <span class="stat-num">02m 46s</span>
+                                    <span class="stat-name">Avg. Session <span class="trend up"><i data-lucide="arrow-up-right"></i> 8.4%</span></span>
+                                </div>
+                                <div class="chart-stat-item">
+                                    <span class="stat-num">68.3%</span>
+                                    <span class="stat-name">Bounce Rate <span class="trend down"><i data-lucide="arrow-down-left"></i> 4.2%</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Projects Card -->
+                        <div class="recent-projects-card">
+                            <div class="card-header-flex">
+                                <h3>Recent Projects</h3>
+                                <button class="btn btn-text" data-goto-view="projects">View All <i data-lucide="arrow-right" class="icon-xs"></i></button>
+                            </div>
+                            <div class="recent-projects-list" id="dash-projects-list">
+                                <!-- Filled by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Grid: Messages, Top Pages, Feed -->
+                    <div class="dashboard-bottom-row">
+                        <!-- Messages box -->
+                        <div class="dash-bottom-card">
+                            <div class="card-header-flex">
+                                <h3>Recent Messages</h3>
+                                <button class="btn btn-text" data-goto-view="messages">View All <i data-lucide="arrow-right" class="icon-xs"></i></button>
+                            </div>
+                            <div class="dash-messages-list" id="dash-messages-list">
+                                <!-- Filled by JS -->
+                            </div>
+                        </div>
+                        
+                        <!-- Top Pages -->
+                        <div class="dash-bottom-card">
+                            <div class="card-header-flex">
+                                <h3>Top Pages</h3>
+                                <button class="btn btn-text" data-goto-view="analytics">View Analytics <i data-lucide="arrow-right" class="icon-xs"></i></button>
+                            </div>
+                            <div class="top-pages-list">
+                                <div class="top-page-item">
+                                    <span class="page-route">/</span>
+                                    <div class="page-bar-wrapper">
+                                        <div class="page-bar" style="width: 80%;"></div>
+                                    </div>
+                                    <span class="page-views">12.4K</span>
+                                </div>
+                                <div class="top-page-item">
+                                    <span class="page-route">/projects</span>
+                                    <div class="page-bar-wrapper">
+                                        <div class="page-bar" style="width: 58%;"></div>
+                                    </div>
+                                    <span class="page-views">8.7K</span>
+                                </div>
+                                <div class="top-page-item">
+                                    <span class="page-route">/about</span>
+                                    <div class="page-bar-wrapper">
+                                        <div class="page-bar" style="width: 30%;"></div>
+                                    </div>
+                                    <span class="page-views">4.3K</span>
+                                </div>
+                                <div class="top-page-item">
+                                    <span class="page-route">/blog</span>
+                                    <div class="page-bar-wrapper">
+                                        <div class="page-bar" style="width: 15%;"></div>
+                                    </div>
+                                    <span class="page-views">2.1K</span>
+                                </div>
+                                <div class="top-page-item">
+                                    <span class="page-route">/contact</span>
+                                    <div class="page-bar-wrapper">
+                                        <div class="page-bar" style="width: 8%;"></div>
+                                    </div>
+                                    <span class="page-views">1.3K</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Feed -->
+                        <div class="dash-bottom-card">
+                            <div class="card-header-flex">
+                                <h3>Activity Feed</h3>
+                                <button class="btn btn-text">View All <i data-lucide="arrow-right" class="icon-xs"></i></button>
+                            </div>
+                            <div class="activity-feed-list">
+                                <div class="feed-item">
+                                    <div class="feed-icon bg-green"><i data-lucide="briefcase"></i></div>
+                                    <div class="feed-details">
+                                        <p class="feed-text">New project "Nova Shoe Store" published</p>
+                                        <span class="feed-time">2 hours ago</span>
+                                    </div>
+                                </div>
+                                <div class="feed-item">
+                                    <div class="feed-icon bg-cyan"><i data-lucide="message-square"></i></div>
+                                    <div class="feed-details">
+                                        <p class="feed-text">New message received from Rohan Sharma</p>
+                                        <span class="feed-time">3 hours ago</span>
+                                    </div>
+                                </div>
+                                <div class="feed-item">
+                                    <div class="feed-icon bg-blue"><i data-lucide="pencil"></i></div>
+                                    <div class="feed-details">
+                                        <p class="feed-text">Blog post "Building Modern UIs" published</p>
+                                        <span class="feed-time">5 hours ago</span>
+                                    </div>
+                                </div>
+                                <div class="feed-item">
+                                    <div class="feed-icon bg-purple"><i data-lucide="download"></i></div>
+                                    <div class="feed-details">
+                                        <p class="feed-text">Resume downloaded by a visitor</p>
+                                        <span class="feed-time">8 hours ago</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. PROFILE VIEW -->
+                <div class="admin-view" id="view-profile">
+                    <div class="card card-form">
+                        <h3>Edit Profile Details</h3>
+                        <p class="card-desc">Modify personal info displayed on the homepage and about section.</p>
+                        <form id="profile-form">
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="prof-name">Full Name</label>
+                                    <input type="text" id="prof-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="prof-title">Hero Subtitle</label>
+                                    <input type="text" id="prof-title" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-bio">Hero Short Description</label>
+                                <textarea id="prof-bio" rows="2" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-about-bio">About Me Description</label>
+                                <textarea id="prof-about-bio" rows="3" required></textarea>
+                            </div>
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="prof-education">Education Details</label>
+                                    <input type="text" id="prof-education" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="prof-specialization">Specialization</label>
+                                    <input type="text" id="prof-specialization" required>
+                                </div>
+                            </div>
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="prof-location">Location</label>
+                                    <input type="text" id="prof-location" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="prof-email">Email Address</label>
+                                    <input type="email" id="prof-email" required>
+                                </div>
+                            </div>
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="prof-stat-projects">Projects Completed Stat (e.g. 15+)</label>
+                                    <input type="text" id="prof-stat-projects" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="prof-stat-experience">Years of Experience Stat (e.g. 1+)</label>
+                                    <input type="text" id="prof-stat-experience" required>
+                                </div>
+                            </div>
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="prof-stat-problems">Coding Problems Solved Stat (e.g. 1000+)</label>
+                                    <input type="text" id="prof-stat-problems" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="prof-stat-commits">GitHub Commits Stat (e.g. 800+)</label>
+                                    <input type="text" id="prof-stat-commits" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="prof-avatar">Profile Image URL / Path</label>
+                                <input type="text" id="prof-avatar" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Profile</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 3. PROJECTS VIEW -->
+                <div class="admin-view" id="view-projects">
+                    <div class="card card-table-wrapper">
+                        <div class="card-header-flex">
+                            <div>
+                                <h3>Manage Projects</h3>
+                                <p class="card-desc">Publish, edit, or remove featured projects.</p>
+                            </div>
+                            <button class="btn btn-primary" id="btn-add-project-modal">+ Add Project</button>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table class="admin-table" id="projects-table">
+                                <thead>
+                                    <tr>
+                                        <th>Project Details</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Views</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Filled by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. PROJECT DETAILS VIEW -->
+                <div class="admin-view" id="view-project-details">
+                    <div class="card card-form">
+                        <h3>Detailed Project Specifications</h3>
+                        <p class="card-desc">Manage specific settings and tags of selected projects.</p>
+                        <form id="project-detail-form">
+                            <div class="form-group">
+                                <label for="detail-project-select">Select Project</label>
+                                <select id="detail-project-select" class="select-lg">
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="detail-project-link">External Live Link</label>
+                                    <input type="url" id="detail-project-link">
+                                </div>
+                                <div class="form-group">
+                                    <label for="detail-project-tags">Tags (comma-separated)</label>
+                                    <input type="text" id="detail-project-tags">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Specifications</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 5. SKILLS VIEW -->
+                <div class="admin-view" id="view-skills">
+                    <div class="card card-table-wrapper">
+                        <div class="card-header-flex">
+                            <div>
+                                <h3>Manage Skills</h3>
+                                <p class="card-desc">Update the technologies and areas of expertise list.</p>
+                            </div>
+                            <button class="btn btn-primary" id="btn-add-skill-modal">+ Add Skill</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="admin-table" id="skills-table">
+                                <thead>
+                                    <tr>
+                                        <th>Icon</th>
+                                        <th>Skill Category</th>
+                                        <th>Sub-Label</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Filled by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. EXPERIENCE VIEW -->
+                <div class="admin-view" id="view-experience">
+                    <div class="card card-table-wrapper">
+                        <div class="card-header-flex">
+                            <div>
+                                <h3>Work Experience History</h3>
+                                <p class="card-desc">Edit jobs, titles, and dates of your career history.</p>
+                            </div>
+                            <button class="btn btn-primary" id="btn-add-exp-modal">+ Add Experience</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="admin-table" id="exp-table">
+                                <thead>
+                                    <tr>
+                                        <th>Company & Title</th>
+                                        <th>Duration</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Filled by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. EDUCATION VIEW -->
+                <div class="admin-view" id="view-education">
+                    <div class="card card-table-wrapper">
+                        <div class="card-header-flex">
+                            <div>
+                                <h3>Education History</h3>
+                                <p class="card-desc">Manage academic qualifications and universities.</p>
+                            </div>
+                            <button class="btn btn-primary" id="btn-add-edu-modal">+ Add Education</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="admin-table" id="edu-table">
+                                <thead>
+                                    <tr>
+                                        <th>Institution & Degree</th>
+                                        <th>Duration</th>
+                                        <th>Details</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Filled by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. CERTIFICATES VIEW -->
+                <div class="admin-view" id="view-certificates">
+                    <div class="card card-table-wrapper">
+                        <div class="card-header-flex">
+                            <div>
+                                <h3>Credentials & Certifications</h3>
+                                <p class="card-desc">List professional validations, cloud certificates, and courses.</p>
+                            </div>
+                            <button class="btn btn-primary" id="btn-add-cert-modal">+ Add Certificate</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="admin-table" id="certs-table">
+                                <thead>
+                                    <tr>
+                                        <th>Title & Issuer</th>
+                                        <th>Date</th>
+                                        <th>Credential ID</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Filled by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 9. BLOG VIEW -->
+                <div class="admin-view" id="view-blog">
+                    <div class="card card-table-wrapper">
+                        <div class="card-header-flex">
+                            <div>
+                                <h3>Blog Articles</h3>
+                                <p class="card-desc">Manage articles, design concepts, and tutorials.</p>
+                            </div>
+                            <button class="btn btn-primary" id="btn-add-blog-modal">+ Add Article</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="admin-table" id="blog-table">
+                                <thead>
+                                    <tr>
+                                        <th>Article Title</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Views</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Filled by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 10. TESTIMONIALS VIEW -->
+                <div class="admin-view" id="view-testimonials">
+                    <div class="card card-table-wrapper">
+                        <div class="card-header-flex">
+                            <div>
+                                <h3>Client Testimonials</h3>
+                                <p class="card-desc">Manage positive feedback displayed in the references grid.</p>
+                            </div>
+                            <button class="btn btn-primary" id="btn-add-testimonial-modal">+ Add Testimonial</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="admin-table" id="testimonials-table">
+                                <thead>
+                                    <tr>
+                                        <th>Author & Title</th>
+                                        <th>Feedback Statement</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Filled by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 11. CONTACT MESSAGES VIEW -->
+                <div class="admin-view" id="view-messages">
+                    <div class="card card-table-wrapper">
+                        <div class="card-header-flex">
+                            <div>
+                                <h3>Contact Messages Inbox</h3>
+                                <p class="card-desc">Read and manage inquiries submitted via the portfolio form.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table class="admin-table" id="messages-table">
+                                <thead>
+                                    <tr>
+                                        <th>Sender</th>
+                                        <th>Inquiry Details</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Filled by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 12. MEDIA LIBRARY VIEW -->
+                <div class="admin-view" id="view-media">
+                    <div class="card media-library-card">
+                        <div class="card-header-flex">
+                            <div>
+                                <h3>Media Library</h3>
+                                <p class="card-desc">Explore pre-generated assets and local images.</p>
+                            </div>
+                            <button class="btn btn-primary" id="btn-media-add">+ Add Asset Link</button>
+                        </div>
+                        
+                        <div class="media-grid" id="media-assets-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 13. ANALYTICS VIEW -->
+                <div class="admin-view" id="view-analytics">
+                    <div class="card analytics-large-view">
+                        <h3>Detailed Traffic Analysis</h3>
+                        <p class="card-desc">Review page-view analytics, session data, and bounce curves.</p>
+                        <div class="big-chart-container">
+                            <canvas id="chart-analytics-large"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 14. SEO VIEW -->
+                <div class="admin-view" id="view-seo">
+                    <div class="card card-form">
+                        <h3>SEO & Metadata Controls</h3>
+                        <p class="card-desc">Optimize page tags for search crawlers (meta tags, descriptions).</p>
+                        <form id="seo-form">
+                            <div class="form-group">
+                                <label for="seo-title">Meta Title Tag</label>
+                                <input type="text" id="seo-title" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="seo-desc">Meta Description Tag</label>
+                                <textarea id="seo-desc" rows="3" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="seo-keywords">Keywords (comma-separated)</label>
+                                <input type="text" id="seo-keywords" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save SEO Configurations</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 15. APPEARANCE VIEW -->
+                <div class="admin-view" id="view-appearance">
+                    <div class="card card-form">
+                        <h3>Website Theme Controls</h3>
+                        <p class="card-desc">Alter accent colors and general page presentation.</p>
+                        <form id="appearance-form">
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="theme-primary">Primary Accent (Cyan)</label>
+                                    <input type="color" id="theme-primary">
+                                </div>
+                                <div class="form-group">
+                                    <label for="theme-bg">Background Base Color</label>
+                                    <input type="color" id="theme-bg">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Palette Styles</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 16. SETTINGS VIEW -->
+                <div class="admin-view" id="view-settings">
+                    <div class="card card-form">
+                        <h3>System Configuration</h3>
+                        <p class="card-desc">Configure admin account credentials and security keys.</p>
+                        <form id="settings-form">
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="set-username">Admin Username</label>
+                                    <input type="text" id="set-username" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="set-password">Admin Password</label>
+                                    <input type="password" id="set-password" placeholder="••••••••">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Console Settings</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Elements for Add/Edit actions -->
+    <!-- 1. PROJECT MODAL -->
+    <div class="modal-overlay" id="modal-project">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="project-modal-title">Add New Project</h3>
+                <button class="modal-close-btn" id="modal-project-close"><i data-lucide="x"></i></button>
+            </div>
+            <form id="project-modal-form">
+                <input type="hidden" id="modal-project-id">
+                <div class="form-group">
+                    <label for="modal-project-title">Project Title</label>
+                    <input type="text" id="modal-project-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="modal-project-desc">Description</label>
+                    <textarea id="modal-project-desc" rows="3" required></textarea>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="modal-project-tech">Technologies (comma-separated)</label>
+                        <input type="text" id="modal-project-tech" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-project-image">Thumbnail Image URL / Path</label>
+                        <input type="text" id="modal-project-image" required>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="modal-project-status">Publication Status</label>
+                        <select id="modal-project-status" class="select-md">
+                            <option value="Published">Published</option>
+                            <option value="Draft">Draft</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-project-link">Demo Link</label>
+                        <input type="url" id="modal-project-link">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="modal-project-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. SKILL MODAL -->
+    <div class="modal-overlay" id="modal-skill">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="skill-modal-title">Add New Skill</h3>
+                <button class="modal-close-btn" id="modal-skill-close"><i data-lucide="x"></i></button>
+            </div>
+            <form id="skill-modal-form">
+                <input type="hidden" id="modal-skill-id">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="modal-skill-category">Skill Category</label>
+                        <input type="text" id="modal-skill-category" placeholder="Frontend" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-skill-desc">Sub-Label</label>
+                        <input type="text" id="modal-skill-desc" placeholder="Development" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="modal-skill-icon">Lucide Icon Name</label>
+                    <input type="text" id="modal-skill-icon" placeholder="monitor" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="modal-skill-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Skill</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. TESTIMONIAL MODAL -->
+    <div class="modal-overlay" id="modal-testimonial">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="testimonial-modal-title">Add New Testimonial</h3>
+                <button class="modal-close-btn" id="modal-testimonial-close"><i data-lucide="x"></i></button>
+            </div>
+            <form id="testimonial-modal-form">
+                <input type="hidden" id="modal-testimonial-id">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="modal-test-author">Client Name</label>
+                        <input type="text" id="modal-test-author" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-test-title">Designation & Company</label>
+                        <input type="text" id="modal-test-title" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="modal-test-text">Testimonial Quote</label>
+                    <textarea id="modal-test-text" rows="3" required></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="modal-testimonial-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Testimonial</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. MESSAGE MODAL (View/Reply Inquiry) -->
+    <div class="modal-overlay" id="modal-message">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>View Inbound Message</h3>
+                <button class="modal-close-btn" id="modal-message-close"><i data-lucide="x"></i></button>
+            </div>
+            <div class="message-details-view">
+                <div class="detail-row"><strong>From:</strong> <span id="msg-view-name"></span> (<span id="msg-view-email"></span>)</div>
+                <div class="detail-row"><strong>Date:</strong> <span id="msg-view-date"></span></div>
+                <div class="detail-row"><strong>Subject:</strong> <span id="msg-view-subject"></span></div>
+                <div class="detail-content-box">
+                    <p id="msg-view-text"></p>
+                </div>
+                <div class="form-group reply-box-container">
+                    <label for="msg-reply-text">Quick Response Draft (Simulated)</label>
+                    <textarea id="msg-reply-text" rows="3" placeholder="Write your response..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="modal-message-cancel">Close</button>
+                    <button type="button" class="btn btn-primary" id="btn-send-reply">Send Reply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+<script src="admin.js"></script>
+   
+</body>
+</html>
