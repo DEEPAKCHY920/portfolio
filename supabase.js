@@ -5,3 +5,5 @@ const supabase = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
+
+console.log("✅ supabase.js executed, client keys:", Object.keys(supabase));
