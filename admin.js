@@ -6,42 +6,26 @@ document.addEventListener("DOMContentLoaded", () => {
     // have dedicated tables in the schema)
     // ==========================================================
     async function getSetting(key) {
-        const { data, error } = await supabase
-            .from("settings")
-            .select("*")
-            .eq("key", key)
-            .maybeSingle();
-        if (error) {
-            alert("Error loading settings: " + error.message);
+        try {
+            const doc = await db.collection("settings").doc(key).get();
+            if (doc.exists) {
+                return doc.data().value;
+            }
+            return null;
+        } catch (error) {
+            console.error("Error loading setting " + key + ":", error);
             return null;
         }
-        return data ? data.value : null;
     }
 
     async function saveSetting(key, value) {
-        const { data: existing, error: fetchError } = await supabase
-            .from("settings")
-            .select("id")
-            .eq("key", key)
-            .maybeSingle();
-
-        if (fetchError) {
-            alert("Error checking settings: " + fetchError.message);
-            return false;
-        }
-
-        let error;
-        if (existing) {
-            ({ error } = await supabase.from("settings").update({ value }).eq("key", key));
-        } else {
-            ({ error } = await supabase.from("settings").insert({ key, value }));
-        }
-
-        if (error) {
+        try {
+            await db.collection("settings").doc(key).set({ value }, { merge: true });
+            return true;
+        } catch (error) {
             alert("Error saving settings: " + error.message);
             return false;
         }
-        return true;
     }
 
     function setButtonLoading(btn, isLoading, loadingText = "Saving...") {
@@ -61,18 +45,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const loginOverlay = document.getElementById("login-overlay");
     const loginError = document.getElementById("login-error-msg");
 
-    async function checkAuth() {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-            console.error(error);
-        }
-        if (session) {
+    // Firebase Auth State Listener (replaces checkAuth and onAuthStateChange)
+    auth.onAuthStateChanged((user) => {
+        if (user) {
             loginOverlay.classList.remove("active");
-            initializeDashboard();
+            if (!window.dashboardInitialized) {
+                window.dashboardInitialized = true;
+                initializeDashboard();
+            }
         } else {
+            window.dashboardInitialized = false;
             loginOverlay.classList.add("active");
         }
-    }
+    });
 
     if (loginForm) {
         loginForm.addEventListener("submit", async (e) => {
@@ -83,31 +68,19 @@ document.addEventListener("DOMContentLoaded", () => {
             setButtonLoading(submitBtn, true, "Signing in...");
 
             try {
-                if (typeof supabase === "undefined") {
-                    throw new Error("Supabase client is not initialized (check that supabase.js loads before admin.js).");
+                if (typeof auth === "undefined") {
+                    throw new Error("Firebase auth client is not initialized.");
                 }
 
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: user,
-                    password: pass
-                });
-
-                if (error) {
-                    console.error("Login error:", error);
-                    loginError.textContent = error.message || "Invalid username or password.";
-                    loginError.style.display = "flex";
-                    const card = document.querySelector(".login-card");
-                    card.style.animation = "shake 0.3s ease";
-                    setTimeout(() => { card.style.animation = ""; }, 300);
-                } else {
-                    loginError.style.display = "none";
-                    loginOverlay.classList.remove("active");
-                    initializeDashboard();
-                }
+                await auth.signInWithEmailAndPassword(user, pass);
+                loginError.style.display = "none";
             } catch (err) {
-                console.error("Login exception:", err);
-                loginError.textContent = err.message || "Something went wrong. Check the console for details.";
+                console.error("Login error:", err);
+                loginError.textContent = err.message || "Invalid username or password.";
                 loginError.style.display = "flex";
+                const card = document.querySelector(".login-card");
+                card.style.animation = "shake 0.3s ease";
+                setTimeout(() => { card.style.animation = ""; }, 300);
             } finally {
                 setButtonLoading(submitBtn, false);
             }
@@ -117,21 +90,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const logoutTrigger = document.getElementById("logout-trigger");
     if (logoutTrigger) {
         logoutTrigger.addEventListener("click", async () => {
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                alert("Error logging out: " + error.message);
-                return;
+            try {
+                await auth.signOut();
+                window.location.reload();
+            } catch (err) {
+                alert("Error logging out: " + err.message);
             }
-            window.location.reload();
         });
     }
-
-    // React to session expiry / external sign-out
-    supabase.auth.onAuthStateChange((event) => {
-        if (event === "SIGNED_OUT") {
-            loginOverlay.classList.add("active");
-        }
-    });
 
     // 3. SPA ROUTING & VIEW SWITCHER
     const menuLinks = document.querySelectorAll(".menu-item-link");
@@ -362,23 +328,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Dashboard View Render
     async function renderDashboardData() {
-        const { data: projects, error: projError } = await supabase
-            .from("projects")
-            .select("*")
-            .order("created_at", { ascending: true });
-        if (projError) {
-            alert("Error loading projects: " + projError.message);
-            return;
-        }
+        try {
+            const projSnapshot = await db.collection("projects").orderBy("created_at", "asc").get();
+            const projects = projSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        const { data: messages, error: msgError } = await supabase
-            .from("contact_messages")
-            .select("*")
-            .order("created_at", { ascending: true });
-        if (msgError) {
-            alert("Error loading messages: " + msgError.message);
-            return;
-        }
+            const msgSnapshot = await db.collection("contact_messages").orderBy("created_at", "asc").get();
+            const messages = msgSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         // Counters
         document.getElementById("dash-projects-count").textContent = projects.length;
@@ -442,6 +397,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
         lucide.createIcons();
+        } catch (error) {
+            alert("Error loading dashboard data: " + error.message);
+        }
     }
 
     // Projects CRUD
@@ -449,95 +407,92 @@ document.addEventListener("DOMContentLoaded", () => {
     const projModal = document.getElementById("modal-project");
 
     async function renderProjectsTable() {
-        const { data: projects, error } = await supabase
-            .from("projects")
-            .select("*")
-            .order("created_at", { ascending: true });
-        if (error) {
-            alert("Error loading projects: " + error.message);
-            return;
-        }
+        try {
+            const snapshot = await db.collection("projects").orderBy("created_at", "asc").get();
+            const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        const tbody = document.querySelector("#projects-table tbody");
-        if (tbody) {
-            tbody.innerHTML = "";
-            projects.forEach(proj => {
-                const statusClass = proj.status === "Published" ? "published" : "draft";
-                const dotColor = proj.status === "Published" ? "#22c55e" : "#8e9fa0";
+            const tbody = document.querySelector("#projects-table tbody");
+            if (tbody) {
+                tbody.innerHTML = "";
+                projects.forEach(proj => {
+                    const statusClass = proj.status === "Published" ? "published" : "draft";
+                    const dotColor = proj.status === "Published" ? "#22c55e" : "#8e9fa0";
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td>
-                            <div class="table-proj-cell">
-                                <img src="${proj.image}" alt="" class="table-proj-thumb">
-                                <div class="table-proj-info">
-                                    <span class="table-proj-title">${proj.title}</span>
-                                    <span class="table-proj-tech">${proj.tech}</span>
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>
+                                <div class="table-proj-cell">
+                                    <img src="${proj.image}" alt="" class="table-proj-thumb">
+                                    <div class="table-proj-info">
+                                        <span class="table-proj-title">${proj.title}</span>
+                                        <span class="table-proj-tech">${proj.tech}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="status-badge ${statusClass}" onclick="toggleProjectStatus('${proj.id}')" style="cursor:pointer">
-                                <span class="status-dot-static" style="background-color: ${dotColor};"></span>
-                                <span>${proj.status}</span>
-                            </span>
-                        </td>
-                        <td>${proj.date || 'May 2024'}</td>
-                        <td>${(proj.views || 0).toLocaleString()}</td>
-                        <td>
-                            <div class="table-actions-cell">
-                                <button class="btn-icon edit" onclick="editProjectRow('${proj.id}')" title="Edit"><i data-lucide="edit-3" class="icon-sm"></i></button>
-                                <button class="btn-icon delete" onclick="deleteProjectRow('${proj.id}')" title="Delete"><i data-lucide="trash-2" class="icon-sm"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
+                            </td>
+                            <td>
+                                <span class="status-badge ${statusClass}" onclick="toggleProjectStatus('${proj.id}')" style="cursor:pointer">
+                                    <span class="status-dot-static" style="background-color: ${dotColor};"></span>
+                                    <span>${proj.status}</span>
+                                </span>
+                            </td>
+                            <td>${proj.date || 'May 2024'}</td>
+                            <td>${(proj.views || 0).toLocaleString()}</td>
+                            <td>
+                                <div class="table-actions-cell">
+                                    <button class="btn-icon edit" onclick="editProjectRow('${proj.id}')" title="Edit"><i data-lucide="edit-3" class="icon-sm"></i></button>
+                                    <button class="btn-icon delete" onclick="deleteProjectRow('${proj.id}')" title="Delete"><i data-lucide="trash-2" class="icon-sm"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            lucide.createIcons();
+        } catch (error) {
+            alert("Error loading projects: " + error.message);
         }
-        lucide.createIcons();
     }
 
     window.toggleProjectStatus = async function(id) {
-        const { data: proj, error: fetchError } = await supabase
-            .from("projects")
-            .select("status")
-            .eq("id", id)
-            .single();
-        if (fetchError) {
-            alert("Error loading project: " + fetchError.message);
-            return;
-        }
-        const newStatus = proj.status === "Published" ? "Draft" : "Published";
-        const { error } = await supabase.from("projects").update({ status: newStatus }).eq("id", id);
-        if (error) {
+        try {
+            const docRef = db.collection("projects").doc(id);
+            const doc = await docRef.get();
+            if (!doc.exists) {
+                alert("Project not found!");
+                return;
+            }
+            const currentStatus = doc.data().status;
+            const newStatus = currentStatus === "Published" ? "Draft" : "Published";
+            await docRef.update({ status: newStatus });
+            renderProjectsTable();
+            window.dispatchEvent(new Event('storage'));
+        } catch (error) {
             alert("Error updating status: " + error.message);
-            return;
         }
-        renderProjectsTable();
-        window.dispatchEvent(new Event('storage'));
     };
 
     window.deleteProjectRow = async function(id) {
         if (confirm("Are you sure you want to delete this project?")) {
-            const { error } = await supabase.from("projects").delete().eq("id", id);
-            if (error) {
+            try {
+                await db.collection("projects").doc(id).delete();
+                renderProjectsTable();
+                window.dispatchEvent(new Event('storage'));
+            } catch (error) {
                 alert("Error deleting project: " + error.message);
-                return;
             }
-            renderProjectsTable();
-            window.dispatchEvent(new Event('storage'));
         }
     };
 
     window.editProjectRow = async function(id) {
-        const { data: proj, error } = await supabase.from("projects").select("*").eq("id", id).single();
-        if (error) {
-            alert("Error loading project: " + error.message);
-            return;
-        }
-        if (proj) {
+        try {
+            const doc = await db.collection("projects").doc(id).get();
+            if (!doc.exists) {
+                alert("Project not found!");
+                return;
+            }
+            const proj = doc.data();
             document.getElementById("project-modal-title").textContent = "Edit Project";
-            document.getElementById("modal-project-id").value = proj.id;
+            document.getElementById("modal-project-id").value = id;
             document.getElementById("modal-project-title").value = proj.title;
             document.getElementById("modal-project-desc").value = proj.description;
             document.getElementById("modal-project-tech").value = proj.tech;
@@ -546,6 +501,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("modal-project-link").value = proj.link || "";
 
             projModal.classList.add("active");
+        } catch (error) {
+            alert("Error loading project: " + error.message);
         }
     };
 
@@ -563,11 +520,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const status = document.getElementById("modal-project-status").value;
             const link = document.getElementById("modal-project-link").value;
 
-            let error;
-            if (id) {
-                ({ error } = await supabase
-                    .from("projects")
-                    .update({
+            try {
+                if (id) {
+                    await db.collection("projects").doc(id).update({
                         title: title,
                         description: desc,
                         tech: tech,
@@ -575,33 +530,31 @@ document.addEventListener("DOMContentLoaded", () => {
                         image: image,
                         status: status,
                         link: link
-                    })
-                    .eq("id", id));
-            } else {
-                ({ error } = await supabase.from("projects").insert({
-                    title: title,
-                    description: desc,
-                    tech: tech,
-                    tags: tech.split(",").map(t => t.trim()),
-                    image: image,
-                    status: status,
-                    link: link,
-                    views: 0,
-                    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                }));
-            }
+                    });
+                } else {
+                    await db.collection("projects").add({
+                        title: title,
+                        description: desc,
+                        tech: tech,
+                        tags: tech.split(",").map(t => t.trim()),
+                        image: image,
+                        status: status,
+                        link: link,
+                        views: 0,
+                        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                        created_at: Date.now()
+                    });
+                }
 
-            setButtonLoading(submitBtn, false);
-
-            if (error) {
+                projModal.classList.remove("active");
+                projForm.reset();
+                renderProjectsTable();
+                window.dispatchEvent(new Event('storage'));
+            } catch (error) {
                 alert("Error saving project: " + error.message);
-                return;
+            } finally {
+                setButtonLoading(submitBtn, false);
             }
-
-            projModal.classList.remove("active");
-            projForm.reset();
-            renderProjectsTable();
-            window.dispatchEvent(new Event('storage'));
         });
     }
 
@@ -617,23 +570,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Project Details Config Form
     async function populateProjectDetailsForm() {
-        const { data: projects, error } = await supabase
-            .from("projects")
-            .select("*")
-            .order("created_at", { ascending: true });
-        if (error) {
-            alert("Error loading projects: " + error.message);
-            return;
-        }
-        const select = document.getElementById("detail-project-select");
-        if (select) {
-            select.innerHTML = "";
-            projects.forEach(p => {
-                select.innerHTML += `<option value="${p.id}">${p.title}</option>`;
-            });
+        try {
+            const snapshot = await db.collection("projects").orderBy("created_at", "asc").get();
+            const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const select = document.getElementById("detail-project-select");
+            if (select) {
+                select.innerHTML = "";
+                projects.forEach(p => {
+                    select.innerHTML += `<option value="${p.id}">${p.title}</option>`;
+                });
 
-            // Trigger detail load
-            loadSelectedProjectDetails();
+                // Trigger detail load
+                loadSelectedProjectDetails();
+            }
+        } catch (error) {
+            alert("Error loading projects: " + error.message);
         }
     }
 
@@ -645,14 +596,15 @@ document.addEventListener("DOMContentLoaded", () => {
     async function loadSelectedProjectDetails() {
         const id = document.getElementById("detail-project-select").value;
         if (!id) return;
-        const { data: proj, error } = await supabase.from("projects").select("*").eq("id", id).single();
-        if (error) {
+        try {
+            const doc = await db.collection("projects").doc(id).get();
+            if (doc.exists) {
+                const proj = doc.data();
+                document.getElementById("detail-project-link").value = proj.link || "";
+                document.getElementById("detail-project-tags").value = proj.tags ? proj.tags.join(", ") : "";
+            }
+        } catch (error) {
             alert("Error loading project details: " + error.message);
-            return;
-        }
-        if (proj) {
-            document.getElementById("detail-project-link").value = proj.link || "";
-            document.getElementById("detail-project-tags").value = proj.tags ? proj.tags.join(", ") : "";
         }
     }
 
@@ -667,23 +619,18 @@ document.addEventListener("DOMContentLoaded", () => {
             const link = document.getElementById("detail-project-link").value;
             const tags = document.getElementById("detail-project-tags").value;
 
-            const { error } = await supabase
-                .from("projects")
-                .update({
+            try {
+                await db.collection("projects").doc(id).update({
                     link: link,
                     tags: tags.split(",").map(t => t.trim())
-                })
-                .eq("id", id);
-
-            setButtonLoading(submitBtn, false);
-
-            if (error) {
+                });
+                alert("Project specifications updated successfully!");
+                window.dispatchEvent(new Event('storage'));
+            } catch (error) {
                 alert("Error updating project specifications: " + error.message);
-                return;
+            } finally {
+                setButtonLoading(submitBtn, false);
             }
-
-            alert("Project specifications updated successfully!");
-            window.dispatchEvent(new Event('storage'));
         });
     }
 
@@ -692,61 +639,63 @@ document.addEventListener("DOMContentLoaded", () => {
     const skillForm = document.getElementById("skill-modal-form");
 
     async function renderSkillsTable() {
-        const { data: skills, error } = await supabase
-            .from("skills")
-            .select("*")
-            .order("created_at", { ascending: true });
-        if (error) {
+        try {
+            const snapshot = await db.collection("skills").orderBy("created_at", "asc").get();
+            const skills = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            const tbody = document.querySelector("#skills-table tbody");
+            if (tbody) {
+                tbody.innerHTML = "";
+                skills.forEach(skill => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><div class="btn-icon text-cyan"><i data-lucide="${skill.icon || 'code-2'}"></i></div></td>
+                            <td><strong>${skill.title}</strong></td>
+                            <td>${skill.description}</td>
+                            <td>
+                                <div class="table-actions-cell">
+                                    <button class="btn-icon edit" onclick="editSkillRow('${skill.id}')"><i data-lucide="edit-3" class="icon-sm"></i></button>
+                                    <button class="btn-icon delete" onclick="deleteSkillRow('${skill.id}')"><i data-lucide="trash-2" class="icon-sm"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            lucide.createIcons();
+        } catch (error) {
             alert("Error loading skills: " + error.message);
-            return;
         }
-        const tbody = document.querySelector("#skills-table tbody");
-        if (tbody) {
-            tbody.innerHTML = "";
-            skills.forEach(skill => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><div class="btn-icon text-cyan"><i data-lucide="${skill.icon || 'code-2'}"></i></div></td>
-                        <td><strong>${skill.title}</strong></td>
-                        <td>${skill.description}</td>
-                        <td>
-                            <div class="table-actions-cell">
-                                <button class="btn-icon edit" onclick="editSkillRow('${skill.id}')"><i data-lucide="edit-3" class="icon-sm"></i></button>
-                                <button class="btn-icon delete" onclick="deleteSkillRow('${skill.id}')"><i data-lucide="trash-2" class="icon-sm"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-        lucide.createIcons();
     }
 
     window.deleteSkillRow = async function(id) {
         if (confirm("Are you sure you want to delete this skill?")) {
-            const { error } = await supabase.from("skills").delete().eq("id", id);
-            if (error) {
+            try {
+                await db.collection("skills").doc(id).delete();
+                renderSkillsTable();
+                window.dispatchEvent(new Event('storage'));
+            } catch (error) {
                 alert("Error deleting skill: " + error.message);
-                return;
             }
-            renderSkillsTable();
-            window.dispatchEvent(new Event('storage'));
         }
     };
 
     window.editSkillRow = async function(id) {
-        const { data: s, error } = await supabase.from("skills").select("*").eq("id", id).single();
-        if (error) {
-            alert("Error loading skill: " + error.message);
-            return;
-        }
-        if (s) {
+        try {
+            const doc = await db.collection("skills").doc(id).get();
+            if (!doc.exists) {
+                alert("Skill not found!");
+                return;
+            }
+            const s = doc.data();
             document.getElementById("skill-modal-title").textContent = "Edit Skill";
-            document.getElementById("modal-skill-id").value = s.id;
+            document.getElementById("modal-skill-id").value = id;
             document.getElementById("modal-skill-category").value = s.title;
             document.getElementById("modal-skill-desc").value = s.description;
             document.getElementById("modal-skill-icon").value = s.icon;
             skillModal.classList.add("active");
+        } catch (error) {
+            alert("Error loading skill: " + error.message);
         }
     };
 
@@ -761,28 +710,30 @@ document.addEventListener("DOMContentLoaded", () => {
             const desc = document.getElementById("modal-skill-desc").value;
             const icon = document.getElementById("modal-skill-icon").value;
 
-            let error;
-            if (id) {
-                ({ error } = await supabase
-                    .from("skills")
-                    .update({ title: category, description: desc, icon: icon })
-                    .eq("id", id));
-            } else {
-                ({ error } = await supabase
-                    .from("skills")
-                    .insert({ title: category, description: desc, icon: icon }));
-            }
+            try {
+                if (id) {
+                    await db.collection("skills").doc(id).update({
+                        title: category,
+                        description: desc,
+                        icon: icon
+                    });
+                } else {
+                    await db.collection("skills").add({
+                        title: category,
+                        description: desc,
+                        icon: icon,
+                        created_at: Date.now()
+                    });
+                }
 
-            setButtonLoading(submitBtn, false);
-
-            if (error) {
+                skillModal.classList.remove("active");
+                renderSkillsTable();
+                window.dispatchEvent(new Event('storage'));
+            } catch (error) {
                 alert("Error saving skill: " + error.message);
-                return;
+            } finally {
+                setButtonLoading(submitBtn, false);
             }
-
-            skillModal.classList.remove("active");
-            renderSkillsTable();
-            window.dispatchEvent(new Event('storage'));
         });
     }
 
@@ -800,60 +751,62 @@ document.addEventListener("DOMContentLoaded", () => {
     const testimonialForm = document.getElementById("testimonial-modal-form");
 
     async function renderTestimonialsTable() {
-        const { data: testimonials, error } = await supabase
-            .from("testimonials")
-            .select("*")
-            .order("created_at", { ascending: true });
-        if (error) {
+        try {
+            const snapshot = await db.collection("testimonials").orderBy("created_at", "asc").get();
+            const testimonials = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            const tbody = document.querySelector("#testimonials-table tbody");
+            if (tbody) {
+                tbody.innerHTML = "";
+                testimonials.forEach(test => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${test.author}</strong><br><span style="font-size:0.75rem">${test.title}</span></td>
+                            <td><p style="font-style:italic; max-width: 400px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">"${test.text}"</p></td>
+                            <td>
+                                <div class="table-actions-cell">
+                                    <button class="btn-icon edit" onclick="editTestimonialRow('${test.id}')"><i data-lucide="edit-3" class="icon-sm"></i></button>
+                                    <button class="btn-icon delete" onclick="deleteTestimonialRow('${test.id}')"><i data-lucide="trash-2" class="icon-sm"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            lucide.createIcons();
+        } catch (error) {
             alert("Error loading testimonials: " + error.message);
-            return;
         }
-        const tbody = document.querySelector("#testimonials-table tbody");
-        if (tbody) {
-            tbody.innerHTML = "";
-            testimonials.forEach(test => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${test.author}</strong><br><span style="font-size:0.75rem">${test.title}</span></td>
-                        <td><p style="font-style:italic; max-width: 400px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">"${test.text}"</p></td>
-                        <td>
-                            <div class="table-actions-cell">
-                                <button class="btn-icon edit" onclick="editTestimonialRow('${test.id}')"><i data-lucide="edit-3" class="icon-sm"></i></button>
-                                <button class="btn-icon delete" onclick="deleteTestimonialRow('${test.id}')"><i data-lucide="trash-2" class="icon-sm"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-        lucide.createIcons();
     }
 
     window.deleteTestimonialRow = async function(id) {
         if (confirm("Are you sure you want to delete this testimonial?")) {
-            const { error } = await supabase.from("testimonials").delete().eq("id", id);
-            if (error) {
+            try {
+                await db.collection("testimonials").doc(id).delete();
+                renderTestimonialsTable();
+                window.dispatchEvent(new Event('storage'));
+            } catch (error) {
                 alert("Error deleting testimonial: " + error.message);
-                return;
             }
-            renderTestimonialsTable();
-            window.dispatchEvent(new Event('storage'));
         }
     };
 
     window.editTestimonialRow = async function(id) {
-        const { data: t, error } = await supabase.from("testimonials").select("*").eq("id", id).single();
-        if (error) {
-            alert("Error loading testimonial: " + error.message);
-            return;
-        }
-        if (t) {
+        try {
+            const doc = await db.collection("testimonials").doc(id).get();
+            if (!doc.exists) {
+                alert("Testimonial not found!");
+                return;
+            }
+            const t = doc.data();
             document.getElementById("testimonial-modal-title").textContent = "Edit Testimonial";
-            document.getElementById("modal-testimonial-id").value = t.id;
+            document.getElementById("modal-testimonial-id").value = id;
             document.getElementById("modal-test-author").value = t.author;
             document.getElementById("modal-test-title").value = t.title;
             document.getElementById("modal-test-text").value = t.text;
             testimonialModal.classList.add("active");
+        } catch (error) {
+            alert("Error loading testimonial: " + error.message);
         }
     };
 
@@ -868,28 +821,30 @@ document.addEventListener("DOMContentLoaded", () => {
             const title = document.getElementById("modal-test-title").value;
             const text = document.getElementById("modal-test-text").value;
 
-            let error;
-            if (id) {
-                ({ error } = await supabase
-                    .from("testimonials")
-                    .update({ author: author, title: title, text: text })
-                    .eq("id", id));
-            } else {
-                ({ error } = await supabase
-                    .from("testimonials")
-                    .insert({ author: author, title: title, text: text }));
-            }
+            try {
+                if (id) {
+                    await db.collection("testimonials").doc(id).update({
+                        author: author,
+                        title: title,
+                        text: text
+                    });
+                } else {
+                    await db.collection("testimonials").add({
+                        author: author,
+                        title: title,
+                        text: text,
+                        created_at: Date.now()
+                    });
+                }
 
-            setButtonLoading(submitBtn, false);
-
-            if (error) {
+                testimonialModal.classList.remove("active");
+                renderTestimonialsTable();
+                window.dispatchEvent(new Event('storage'));
+            } catch (error) {
                 alert("Error saving testimonial: " + error.message);
-                return;
+            } finally {
+                setButtonLoading(submitBtn, false);
             }
-
-            testimonialModal.classList.remove("active");
-            renderTestimonialsTable();
-            window.dispatchEvent(new Event('storage'));
         });
     }
 
@@ -905,89 +860,83 @@ document.addEventListener("DOMContentLoaded", () => {
     // Contact messages inbox reader
     const msgModal = document.getElementById("modal-message");
     async function renderMessagesTable() {
-        const { data: messages, error } = await supabase
-            .from("contact_messages")
-            .select("*")
-            .order("created_at", { ascending: true });
-        if (error) {
+        try {
+            const snapshot = await db.collection("contact_messages").orderBy("created_at", "asc").get();
+            const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            const tbody = document.querySelector("#messages-table tbody");
+            if (tbody) {
+                tbody.innerHTML = "";
+                messages.forEach(msg => {
+                    const readClass = msg.read ? "read" : "unread";
+                    const readLabel = msg.read ? "Read" : "Unread";
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>
+                                <strong>${msg.name}</strong><br>
+                                <span style="font-size:0.75rem">${msg.email}</span>
+                            </td>
+                            <td>
+                                <span class="read-badge ${readClass}">${readLabel}</span>
+                                <span style="font-weight:600; color:var(--text-primary); margin-left:0.5rem">${msg.subject}</span> - 
+                                <span style="font-size:0.85rem">${msg.message.substring(0, 50)}...</span>
+                            </td>
+                            <td>${msg.date}</td>
+                            <td>
+                                <div class="table-actions-cell">
+                                    <button class="btn-icon edit" onclick="openMessageDetail('${msg.id}')" title="View"><i data-lucide="eye" class="icon-sm"></i></button>
+                                    <button class="btn-icon delete" onclick="deleteMessageRow('${msg.id}')" title="Delete"><i data-lucide="trash-2" class="icon-sm"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            lucide.createIcons();
+        } catch (error) {
             alert("Error loading messages: " + error.message);
-            return;
         }
-        const tbody = document.querySelector("#messages-table tbody");
-        if (tbody) {
-            tbody.innerHTML = "";
-            messages.forEach(msg => {
-                const readClass = msg.read ? "read" : "unread";
-                const readLabel = msg.read ? "Read" : "Unread";
-                tbody.innerHTML += `
-                    <tr>
-                        <td>
-                            <strong>${msg.name}</strong><br>
-                            <span style="font-size:0.75rem">${msg.email}</span>
-                        </td>
-                        <td>
-                            <span class="read-badge ${readClass}">${readLabel}</span>
-                            <span style="font-weight:600; color:var(--text-primary); margin-left:0.5rem">${msg.subject}</span> - 
-                            <span style="font-size:0.85rem">${msg.message.substring(0, 50)}...</span>
-                        </td>
-                        <td>${msg.date}</td>
-                        <td>
-                            <div class="table-actions-cell">
-                                <button class="btn-icon edit" onclick="openMessageDetail('${msg.id}')" title="View"><i data-lucide="eye" class="icon-sm"></i></button>
-                                <button class="btn-icon delete" onclick="deleteMessageRow('${msg.id}')" title="Delete"><i data-lucide="trash-2" class="icon-sm"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-        lucide.createIcons();
     }
 
     window.deleteMessageRow = async function(id) {
         if (confirm("Are you sure you want to delete this message?")) {
-            const { error } = await supabase.from("contact_messages").delete().eq("id", id);
-            if (error) {
+            try {
+                await db.collection("contact_messages").doc(id).delete();
+                renderMessagesTable();
+                renderDashboardData();
+            } catch (error) {
                 alert("Error deleting message: " + error.message);
-                return;
             }
-            renderMessagesTable();
-            renderDashboardData();
         }
     };
 
     let activeViewingMessageId = null;
     window.openMessageDetail = async function(id) {
-        const { error: updateError } = await supabase
-            .from("contact_messages")
-            .update({ read: true })
-            .eq("id", id);
-        if (updateError) {
-            alert("Error updating message: " + updateError.message);
-            return;
-        }
+        try {
+            const docRef = db.collection("contact_messages").doc(id);
+            await docRef.update({ read: true });
 
-        const { data: msg, error } = await supabase
-            .from("contact_messages")
-            .select("*")
-            .eq("id", id)
-            .single();
-        if (error) {
+            const doc = await docRef.get();
+            if (!doc.exists) {
+                alert("Message not found!");
+                return;
+            }
+            const msg = doc.data();
+
+            activeViewingMessageId = id;
+            document.getElementById("msg-view-name").textContent = msg.name;
+            document.getElementById("msg-view-email").textContent = msg.email;
+            document.getElementById("msg-view-date").textContent = msg.date;
+            document.getElementById("msg-view-subject").textContent = msg.subject;
+            document.getElementById("msg-view-text").textContent = msg.message;
+            document.getElementById("msg-reply-text").value = "";
+
+            msgModal.classList.add("active");
+            renderMessagesTable();
+            renderDashboardData();
+        } catch (error) {
             alert("Error loading message: " + error.message);
-            return;
         }
-
-        activeViewingMessageId = id;
-        document.getElementById("msg-view-name").textContent = msg.name;
-        document.getElementById("msg-view-email").textContent = msg.email;
-        document.getElementById("msg-view-date").textContent = msg.date;
-        document.getElementById("msg-view-subject").textContent = msg.subject;
-        document.getElementById("msg-view-text").textContent = msg.message;
-        document.getElementById("msg-reply-text").value = "";
-
-        msgModal.classList.add("active");
-        renderMessagesTable();
-        renderDashboardData();
     };
 
     document.getElementById("modal-message-close").addEventListener("click", () => { msgModal.classList.remove("active"); });
@@ -1005,37 +954,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Profile Form Persistence
     async function populateProfileForm() {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
-            alert("Error loading current user: " + (userError ? userError.message : "No session"));
+        const user = auth.currentUser;
+        if (!user) {
+            alert("Error loading current user: No session");
             return;
         }
 
-        const { data: profile, error } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", user.id)
-            .maybeSingle();
-
-        if (error) {
+        try {
+            const doc = await db.collection("profiles").doc(user.uid).get();
+            if (doc.exists) {
+                const profile = doc.data();
+                document.getElementById("prof-name").value = profile.name || "";
+                document.getElementById("prof-title").value = profile.title || "";
+                document.getElementById("prof-bio").value = profile.bio || "";
+                document.getElementById("prof-about-bio").value = profile.about_bio || "";
+                document.getElementById("prof-education").value = profile.education || "";
+                document.getElementById("prof-specialization").value = profile.specialization || "";
+                document.getElementById("prof-location").value = profile.location || "";
+                document.getElementById("prof-email").value = profile.email || "";
+                document.getElementById("prof-avatar").value = profile.avatar || "";
+                document.getElementById("prof-stat-projects").value = profile.stat_projects || "15+";
+                document.getElementById("prof-stat-experience").value = profile.stat_experience || "1+";
+                document.getElementById("prof-stat-problems").value = profile.stat_problems || "1000+";
+                document.getElementById("prof-stat-commits").value = profile.stat_commits || "800+";
+            }
+        } catch (error) {
             alert("Error loading profile: " + error.message);
-            return;
-        }
-
-        if (profile) {
-            document.getElementById("prof-name").value = profile.name || "";
-            document.getElementById("prof-title").value = profile.title || "";
-            document.getElementById("prof-bio").value = profile.bio || "";
-            document.getElementById("prof-about-bio").value = profile.about_bio || "";
-            document.getElementById("prof-education").value = profile.education || "";
-            document.getElementById("prof-specialization").value = profile.specialization || "";
-            document.getElementById("prof-location").value = profile.location || "";
-            document.getElementById("prof-email").value = profile.email || "";
-            document.getElementById("prof-avatar").value = profile.avatar || "";
-            document.getElementById("prof-stat-projects").value = profile.stat_projects || "15+";
-            document.getElementById("prof-stat-experience").value = profile.stat_experience || "1+";
-            document.getElementById("prof-stat-problems").value = profile.stat_problems || "1000+";
-            document.getElementById("prof-stat-commits").value = profile.stat_commits || "800+";
         }
     }
 
@@ -1046,15 +990,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const submitBtn = profileForm.querySelector('button[type="submit"]');
             setButtonLoading(submitBtn, true);
 
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
-            if (userError || !user) {
+            const user = auth.currentUser;
+            if (!user) {
                 setButtonLoading(submitBtn, false);
-                alert("Error loading current user: " + (userError ? userError.message : "No session"));
+                alert("Error loading current user: No session");
                 return;
             }
 
             const profile = {
-                id: user.id,
+                id: user.uid,
                 name: document.getElementById("prof-name").value,
                 title: document.getElementById("prof-title").value,
                 bio: document.getElementById("prof-bio").value,
@@ -1070,59 +1014,56 @@ document.addEventListener("DOMContentLoaded", () => {
                 stat_commits: document.getElementById("prof-stat-commits").value
             };
 
-            const { error } = await supabase.from("profiles").upsert(profile);
-
-            setButtonLoading(submitBtn, false);
-
-            if (error) {
+            try {
+                await db.collection("profiles").doc(user.uid).set(profile, { merge: true });
+                alert("Biography profile saved successfully!");
+                window.dispatchEvent(new Event('storage'));
+            } catch (error) {
                 alert("Error saving profile: " + error.message);
-                return;
+            } finally {
+                setButtonLoading(submitBtn, false);
             }
-
-            alert("Biography profile saved successfully!");
-            window.dispatchEvent(new Event('storage'));
         });
     }
 
     // Experience CRUD
     async function renderExperienceTable() {
-        const { data: exp, error } = await supabase
-            .from("experience")
-            .select("*")
-            .order("created_at", { ascending: true });
-        if (error) {
+        try {
+            const snapshot = await db.collection("experience").orderBy("created_at", "asc").get();
+            const exp = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            const tbody = document.querySelector("#exp-table tbody");
+            if (tbody) {
+                tbody.innerHTML = "";
+                exp.forEach(e => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${e.company}</strong><br><span style="font-size:0.75rem">${e.title}</span></td>
+                            <td>${e.duration}</td>
+                            <td><span style="font-size:0.85rem">${e.description}</span></td>
+                            <td>
+                                <div class="table-actions-cell">
+                                    <button class="btn-icon delete" onclick="deleteExperienceRow('${e.id}')"><i data-lucide="trash-2" class="icon-sm"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            lucide.createIcons();
+        } catch (error) {
             alert("Error loading experience: " + error.message);
-            return;
         }
-        const tbody = document.querySelector("#exp-table tbody");
-        if (tbody) {
-            tbody.innerHTML = "";
-            exp.forEach(e => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${e.company}</strong><br><span style="font-size:0.75rem">${e.title}</span></td>
-                        <td>${e.duration}</td>
-                        <td><span style="font-size:0.85rem">${e.description}</span></td>
-                        <td>
-                            <div class="table-actions-cell">
-                                <button class="btn-icon delete" onclick="deleteExperienceRow('${e.id}')"><i data-lucide="trash-2" class="icon-sm"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-        lucide.createIcons();
     }
 
     window.deleteExperienceRow = async function(id) {
         if (confirm("Are you sure?")) {
-            const { error } = await supabase.from("experience").delete().eq("id", id);
-            if (error) {
+            try {
+                await db.collection("experience").doc(id).delete();
+                renderExperienceTable();
+            } catch (error) {
                 alert("Error deleting experience: " + error.message);
-                return;
             }
-            renderExperienceTable();
         }
     };
 
@@ -1132,59 +1073,59 @@ document.addEventListener("DOMContentLoaded", () => {
         const duration = prompt("Enter Duration (e.g. Jan 2022 - May 2023):");
         const desc = prompt("Enter Short Description:");
         if (company && title) {
-            const { error } = await supabase.from("experience").insert({
-                company: company,
-                title: title,
-                duration: duration,
-                description: desc
-            });
-            if (error) {
+            try {
+                await db.collection("experience").add({
+                    company: company,
+                    title: title,
+                    duration: duration,
+                    description: desc,
+                    created_at: Date.now()
+                });
+                renderExperienceTable();
+            } catch (error) {
                 alert("Error adding experience: " + error.message);
-                return;
             }
-            renderExperienceTable();
         }
     });
 
     // Education CRUD
     async function renderEducationTable() {
-        const { data: edu, error } = await supabase
-            .from("education")
-            .select("*")
-            .order("created_at", { ascending: true });
-        if (error) {
+        try {
+            const snapshot = await db.collection("education").orderBy("created_at", "asc").get();
+            const edu = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            const tbody = document.querySelector("#edu-table tbody");
+            if (tbody) {
+                tbody.innerHTML = "";
+                edu.forEach(e => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${e.school}</strong><br><span style="font-size:0.75rem">${e.degree}</span></td>
+                            <td>${e.duration}</td>
+                            <td><span style="font-size:0.85rem">${e.details}</span></td>
+                            <td>
+                                <div class="table-actions-cell">
+                                    <button class="btn-icon delete" onclick="deleteEducationRow('${e.id}')"><i data-lucide="trash-2" class="icon-sm"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            lucide.createIcons();
+        } catch (error) {
             alert("Error loading education: " + error.message);
-            return;
         }
-        const tbody = document.querySelector("#edu-table tbody");
-        if (tbody) {
-            tbody.innerHTML = "";
-            edu.forEach(e => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${e.school}</strong><br><span style="font-size:0.75rem">${e.degree}</span></td>
-                        <td>${e.duration}</td>
-                        <td><span style="font-size:0.85rem">${e.details}</span></td>
-                        <td>
-                            <div class="table-actions-cell">
-                                <button class="btn-icon delete" onclick="deleteEducationRow('${e.id}')"><i data-lucide="trash-2" class="icon-sm"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-        lucide.createIcons();
     }
 
     window.deleteEducationRow = async function(id) {
         if (confirm("Are you sure?")) {
-            const { error } = await supabase.from("education").delete().eq("id", id);
-            if (error) {
+            try {
+                await db.collection("education").doc(id).delete();
+                renderEducationTable();
+            } catch (error) {
                 alert("Error deleting education: " + error.message);
-                return;
             }
-            renderEducationTable();
         }
     };
 
@@ -1194,59 +1135,59 @@ document.addEventListener("DOMContentLoaded", () => {
         const duration = prompt("Enter Duration:");
         const details = prompt("Enter Grades/Details:");
         if (school && degree) {
-            const { error } = await supabase.from("education").insert({
-                school: school,
-                degree: degree,
-                duration: duration,
-                details: details
-            });
-            if (error) {
+            try {
+                await db.collection("education").add({
+                    school: school,
+                    degree: degree,
+                    duration: duration,
+                    details: details,
+                    created_at: Date.now()
+                });
+                renderEducationTable();
+            } catch (error) {
                 alert("Error adding education: " + error.message);
-                return;
             }
-            renderEducationTable();
         }
     });
 
     // Certificates CRUD
     async function renderCertificatesTable() {
-        const { data: certs, error } = await supabase
-            .from("certificates")
-            .select("*")
-            .order("created_at", { ascending: true });
-        if (error) {
+        try {
+            const snapshot = await db.collection("certificates").orderBy("created_at", "asc").get();
+            const certs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            const tbody = document.querySelector("#certs-table tbody");
+            if (tbody) {
+                tbody.innerHTML = "";
+                certs.forEach(c => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${c.title}</strong><br><span style="font-size:0.75rem">${c.issuer}</span></td>
+                            <td>${c.date}</td>
+                            <td><code style="font-size:0.8rem">${c.credential_id}</code></td>
+                            <td>
+                                <div class="table-actions-cell">
+                                    <button class="btn-icon delete" onclick="deleteCertificateRow('${c.id}')"><i data-lucide="trash-2" class="icon-sm"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            lucide.createIcons();
+        } catch (error) {
             alert("Error loading certificates: " + error.message);
-            return;
         }
-        const tbody = document.querySelector("#certs-table tbody");
-        if (tbody) {
-            tbody.innerHTML = "";
-            certs.forEach(c => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${c.title}</strong><br><span style="font-size:0.75rem">${c.issuer}</span></td>
-                        <td>${c.date}</td>
-                        <td><code style="font-size:0.8rem">${c.credential_id}</code></td>
-                        <td>
-                            <div class="table-actions-cell">
-                                <button class="btn-icon delete" onclick="deleteCertificateRow('${c.id}')"><i data-lucide="trash-2" class="icon-sm"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-        lucide.createIcons();
     }
 
     window.deleteCertificateRow = async function(id) {
         if (confirm("Are you sure?")) {
-            const { error } = await supabase.from("certificates").delete().eq("id", id);
-            if (error) {
+            try {
+                await db.collection("certificates").doc(id).delete();
+                renderCertificatesTable();
+            } catch (error) {
                 alert("Error deleting certificate: " + error.message);
-                return;
             }
-            renderCertificatesTable();
         }
     };
 
@@ -1256,78 +1197,79 @@ document.addEventListener("DOMContentLoaded", () => {
         const date = prompt("Enter Date:");
         const credId = prompt("Enter Credential ID:");
         if (title && issuer) {
-            const { error } = await supabase.from("certificates").insert({
-                title: title,
-                issuer: issuer,
-                date: date,
-                credential_id: credId
-            });
-            if (error) {
+            try {
+                await db.collection("certificates").add({
+                    title: title,
+                    issuer: issuer,
+                    date: date,
+                    credential_id: credId,
+                    created_at: Date.now()
+                });
+                renderCertificatesTable();
+            } catch (error) {
                 alert("Error adding certificate: " + error.message);
-                return;
             }
-            renderCertificatesTable();
         }
     });
 
     // Blog CRUD
     async function renderBlogTable() {
-        const { data: blogs, error } = await supabase
-            .from("blogs")
-            .select("*")
-            .order("created_at", { ascending: true });
-        if (error) {
+        try {
+            const snapshot = await db.collection("blogs").orderBy("created_at", "asc").get();
+            const blogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            const tbody = document.querySelector("#blog-table tbody");
+            if (tbody) {
+                tbody.innerHTML = "";
+                blogs.forEach(b => {
+                    const statusClass = b.status === "Published" ? "published" : "draft";
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${b.title}</strong></td>
+                            <td><span class="status-badge ${statusClass}">${b.status}</span></td>
+                            <td>${b.date}</td>
+                            <td>${b.views || 0}</td>
+                            <td>
+                                <div class="table-actions-cell">
+                                    <button class="btn-icon delete" onclick="deleteBlogRow('${b.id}')"><i data-lucide="trash-2" class="icon-sm"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            lucide.createIcons();
+        } catch (error) {
             alert("Error loading blog posts: " + error.message);
-            return;
         }
-        const tbody = document.querySelector("#blog-table tbody");
-        if (tbody) {
-            tbody.innerHTML = "";
-            blogs.forEach(b => {
-                const statusClass = b.status === "Published" ? "published" : "draft";
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${b.title}</strong></td>
-                        <td><span class="status-badge ${statusClass}">${b.status}</span></td>
-                        <td>${b.date}</td>
-                        <td>${b.views || 0}</td>
-                        <td>
-                            <div class="table-actions-cell">
-                                <button class="btn-icon delete" onclick="deleteBlogRow('${b.id}')"><i data-lucide="trash-2" class="icon-sm"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-        lucide.createIcons();
     }
 
     window.deleteBlogRow = async function(id) {
         if (confirm("Are you sure?")) {
-            const { error } = await supabase.from("blogs").delete().eq("id", id);
-            if (error) {
+            try {
+                await db.collection("blogs").doc(id).delete();
+                renderBlogTable();
+            } catch (error) {
                 alert("Error deleting blog post: " + error.message);
-                return;
             }
-            renderBlogTable();
         }
     };
 
     document.getElementById("btn-add-blog-modal").addEventListener("click", async () => {
         const title = prompt("Enter Article Title:");
         if (title) {
-            const { error } = await supabase.from("blogs").insert({
-                title: title,
-                status: "Published",
-                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                views: 0
-            });
-            if (error) {
+            try {
+                await db.collection("blogs").add({
+                    title: title,
+                    status: "Published",
+                    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                    views: 0,
+                    created_at: Date.now()
+                });
+                renderBlogTable();
+            } catch (error) {
                 alert("Error adding blog post: " + error.message);
-                return;
             }
-            renderBlogTable();
         }
     });
 
@@ -1429,14 +1371,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Settings Credentials Form (uses Supabase Auth directly, since these
+    // Settings Credentials Form (uses Firebase Auth directly, since these
     // are the actual admin login credentials rather than app data)
     async function populateSettingsForm() {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) {
-            alert("Error loading account info: " + error.message);
-            return;
-        }
+        const user = auth.currentUser;
         if (user) {
             document.getElementById("set-username").value = user.email || "";
             document.getElementById("set-password").value = "";
@@ -1450,23 +1388,277 @@ document.addEventListener("DOMContentLoaded", () => {
             const submitBtn = settingsForm.querySelector('button[type="submit"]');
             setButtonLoading(submitBtn, true);
 
-            const user = document.getElementById("set-username").value;
+            const userEmail = document.getElementById("set-username").value;
             const pass = document.getElementById("set-password").value;
 
-            const updatePayload = { email: user };
-            if (pass) updatePayload.password = pass;
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    throw new Error("No authenticated user session found.");
+                }
 
-            const { error } = await supabase.auth.updateUser(updatePayload);
-
-            setButtonLoading(submitBtn, false);
-
-            if (error) {
+                if (userEmail && userEmail !== user.email) {
+                    await user.updateEmail(userEmail);
+                }
+                if (pass) {
+                    await user.updatePassword(pass);
+                }
+                alert("System settings saved! Admin login credentials updated.");
+            } catch (error) {
                 alert("Error updating credentials: " + error.message);
-                return;
+            } finally {
+                setButtonLoading(submitBtn, false);
+            }
+        });
+    }
+
+    // Database Seeding Helper
+    async function clearCollection(collectionName) {
+        const snapshot = await db.collection(collectionName).get();
+        const deletePromises = snapshot.docs.map(doc => doc.ref.delete());
+        await Promise.all(deletePromises);
+    }
+
+    async function seedDatabase() {
+        const btn = document.getElementById("btn-seed-db");
+        if (!btn) return;
+
+        if (!confirm("Are you sure you want to seed the database with premium mock content? This will OVERWRITE your current portfolio data (projects, skills, experience, testimonials, education, certificates, blogs, settings, and profile details).")) {
+            return;
+        }
+
+        setButtonLoading(btn, true, "Seeding Database...");
+
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error("No authenticated user session found. Please log in first.");
             }
 
-            alert("System settings saved! Admin login credentials updated.");
-        });
+            // 1. Clear existing collections
+            const collections = ["projects", "skills", "experience", "testimonials", "education", "certificates", "blogs"];
+            for (const col of collections) {
+                await clearCollection(col);
+            }
+
+            // 2. Seed Profile
+            await db.collection("profiles").doc(user.uid).set({
+                name: "Deepak Choudhary",
+                title: "Full-Stack Software Engineer & Solutions Architect",
+                bio: "Building high-performance, secure, and beautiful web applications that drive real business value. Specializing in JavaScript/TypeScript, React, Node.js, and Cloud Architectures.",
+                about_bio: "I am a passionate software developer who loves bridging the gap between design and technology. With years of experience writing clean, scalable code, I build modern digital interfaces that are fast, accessible, and delightful to use. I am constantly learning new technologies to solve complex engineering challenges and optimize system performance.",
+                avatar: "assets/profile.png",
+                education: "B.Tech in Computer Science",
+                specialization: "Full Stack Web & Cloud Development",
+                location: "Delhi, India",
+                email: user.email || "deepak@example.com",
+                stat_projects: "18+",
+                stat_experience: "2+",
+                stat_problems: "1200+",
+                stat_commits: "950+"
+            }, { merge: true });
+
+            // 3. Seed Projects
+            const sampleProjects = [
+                {
+                    title: "AeroDrive: Cloud Management Platform",
+                    description: "A comprehensive SaaS dashboard designed to monitor cloud resource utilization, track billing metrics, and optimize multi-tenant infrastructure using interactive data visualizations.",
+                    tech: "React, Node.js, Express, Chart.js, TailwindCSS",
+                    tags: ["React", "Node.js", "Chart.js", "TailwindCSS"],
+                    image: "assets/dashboard.png",
+                    status: "Published",
+                    link: "https://github.com",
+                    views: 142,
+                    date: "Jul 2026",
+                    created_at: Date.now() - 30 * 24 * 60 * 60 * 1000
+                },
+                {
+                    title: "StepStride: Premium Sneaker E-Commerce",
+                    description: "A premium sneaker store featuring 3D model previews, a smooth cart/checkout process, user-personalized recommendations, and a responsive mobile-first UI.",
+                    tech: "Vanilla JS, CSS Grid, HTML5, LocalStorage",
+                    tags: ["Vanilla JS", "CSS Grid", "HTML5", "LocalStorage"],
+                    image: "assets/shoe-store.png",
+                    status: "Published",
+                    link: "https://github.com",
+                    views: 98,
+                    date: "May 2026",
+                    created_at: Date.now() - 60 * 24 * 60 * 60 * 1000
+                },
+                {
+                    title: "ZenWorkspace: Minimalist Productivity Tool",
+                    description: "A minimalist workspace application supporting task kanban boards, markdown note-taking, pomodoro timers, and Spotify ambient sound integration.",
+                    tech: "React, Firebase, Tailwind CSS, Lucide Icons",
+                    tags: ["React", "Firebase", "Tailwind CSS", "Lucide Icons"],
+                    image: "assets/workspace.png",
+                    status: "Published",
+                    link: "https://github.com",
+                    views: 215,
+                    date: "Mar 2026",
+                    created_at: Date.now() - 90 * 24 * 60 * 60 * 1000
+                }
+            ];
+            for (const proj of sampleProjects) {
+                await db.collection("projects").add(proj);
+            }
+
+            // 4. Seed Skills
+            const sampleSkills = [
+                {
+                    title: "Frontend Development",
+                    description: "Crafting beautiful, responsive, and accessible user interfaces using React, Vue, HTML5, CSS3, and JavaScript/TypeScript.",
+                    icon: "layout",
+                    created_at: Date.now() - 5000
+                },
+                {
+                    title: "Backend Systems",
+                    description: "Architecting secure, scalable, and optimized RESTful and GraphQL APIs using Node.js, Express, Python, and Go.",
+                    icon: "server",
+                    created_at: Date.now() - 4000
+                },
+                {
+                    title: "Cloud & DevOps",
+                    description: "Deploying and managing microservices on GCP and AWS, setting up robust CI/CD pipelines, and writing Dockerfiles.",
+                    icon: "cloud",
+                    created_at: Date.now() - 3000
+                },
+                {
+                    title: "Database Systems",
+                    description: "Designing normalized schemas and writing efficient queries for relational databases (PostgreSQL, MySQL) and NoSQL (MongoDB, Firestore).",
+                    icon: "database",
+                    created_at: Date.now() - 2000
+                }
+            ];
+            for (const skill of sampleSkills) {
+                await db.collection("skills").add(skill);
+            }
+
+            // 5. Seed Experience
+            const sampleExp = [
+                {
+                    company: "Google Summer of Code",
+                    title: "Open Source Contributor",
+                    duration: "May 2025 - Aug 2025",
+                    description: "Contributed to cloud orchestration tools, optimized container runtime networking, and fixed major performance issues in legacy modules.",
+                    created_at: Date.now() - 10000
+                },
+                {
+                    company: "InnovaTech Solutions",
+                    title: "Junior Software Engineer",
+                    duration: "Sep 2024 - Present",
+                    description: "Maintained core internal services, developed new customer checkout features, and improved site-wide performance and accessibility.",
+                    created_at: Date.now() - 8000
+                }
+            ];
+            for (const exp of sampleExp) {
+                await db.collection("experience").add(exp);
+            }
+
+            // 6. Seed Education
+            const sampleEdu = [
+                {
+                    school: "Delhi Technical University",
+                    degree: "Bachelor of Technology in Computer Science & Engineering",
+                    duration: "2021 - 2025",
+                    details: "GPA: 9.2/10. Relevant Coursework: Data Structures, Algorithms, DBMS, Operating Systems, Computer Networks.",
+                    created_at: Date.now() - 10000
+                },
+                {
+                    school: "St. Xavier Senior Secondary School",
+                    degree: "High School Diploma",
+                    duration: "2019 - 2021",
+                    details: "Percentage: 96.5% (Science Stream with Computer Science).",
+                    created_at: Date.now() - 8000
+                }
+            ];
+            for (const edu of sampleEdu) {
+                await db.collection("education").add(edu);
+            }
+
+            // 7. Seed Certificates
+            const sampleCerts = [
+                {
+                    title: "Google Cloud Certified Professional Cloud Architect",
+                    issuer: "Google Cloud",
+                    date: "Jan 2026",
+                    credential_id: "GCP-PCA-987412",
+                    created_at: Date.now() - 10000
+                },
+                {
+                    title: "AWS Certified Developer – Associate",
+                    issuer: "Amazon Web Services",
+                    date: "Nov 2025",
+                    credential_id: "AWS-CDA-335198",
+                    created_at: Date.now() - 8000
+                }
+            ];
+            for (const cert of sampleCerts) {
+                await db.collection("certificates").add(cert);
+            }
+
+            // 8. Seed Testimonials
+            const sampleTestimonials = [
+                {
+                    author: "Sarah Jenkins",
+                    title: "CEO, InnovaTech",
+                    text: "Deepak is an outstanding engineer. He delivered our product ahead of schedule and with clean, well-tested code. His communication was great throughout the project.",
+                    created_at: Date.now() - 10000
+                },
+                {
+                    author: "Michael Chen",
+                    title: "Product Manager, TechVibe",
+                    text: "Working with Deepak was a pleasure. He took our complex product specs and turned them into a smooth, high-fidelity experience that our users absolutely love.",
+                    created_at: Date.now() - 8000
+                }
+            ];
+            for (const test of sampleTestimonials) {
+                await db.collection("testimonials").add(test);
+            }
+
+            // 9. Seed Blogs
+            const sampleBlogs = [
+                {
+                    title: "Mastering Clean Code in JavaScript",
+                    status: "Published",
+                    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                    views: 42,
+                    created_at: Date.now() - 10000
+                }
+            ];
+            for (const blog of sampleBlogs) {
+                await db.collection("blogs").add(blog);
+            }
+
+            // 10. Seed Settings
+            await db.collection("settings").doc("seo").set({
+                value: {
+                    title: "Deepak Choudhary | Portfolio",
+                    desc: "Explore the personal portfolio of Deepak Choudhary, featuring projects, skills, professional experience, and certifications.",
+                    keywords: "Deepak Choudhary, Software Engineer, Portfolio, Developer, React, Node.js"
+                }
+            }, { merge: true });
+
+            await db.collection("settings").doc("appearance").set({
+                value: {
+                    primary: "#00ffcc",
+                    bg: "#0f172a"
+                }
+            }, { merge: true });
+
+            alert("Database seeded successfully! All tables and collections are fully initialized.");
+            
+            // Reload the admin state and views to display the new content
+            window.location.reload();
+        } catch (error) {
+            alert("Error seeding database: " + error.message);
+            console.error("Seeding error:", error);
+        } finally {
+            setButtonLoading(btn, false);
+        }
+    }
+
+    const seedBtn = document.getElementById("btn-seed-db");
+    if (seedBtn) {
+        seedBtn.addEventListener("click", seedDatabase);
     }
 
     // Initialize SPA state on authentication
@@ -1474,7 +1666,4 @@ document.addEventListener("DOMContentLoaded", () => {
         switchView("dashboard");
         initializeCharts();
     }
-
-    // Kickoff gate verification
-    checkAuth();
 });
